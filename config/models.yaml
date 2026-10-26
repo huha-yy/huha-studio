@@ -1,0 +1,15 @@
+# 模型端点注册表
+# provider 与 agents.yaml 引用对应;key 一律走环境变量(根目录 .env,不进 git)
+
+providers:
+  zhipu:                          # 智谱 coding plan(Anthropic 兼容端点)
+    base_url: https://open.bigmodel.cn/api/anthropic
+    auth_env: ZHIPU_API_KEY
+
+  deepseek:                       # DeepSeek 官方(Anthropic 兼容端点),key 到位即用
+    base_url: https://api.deepseek.com/anthropic
+    auth_env: DEEPSEEK_API_KEY
+
+  llm_proxy:                      # 本地代理(247 dato 栈),路由本地/中转模型
+    base_url: http://127.0.0.1:8080
+    auth_env: DL_INTERNAL_TOKEN

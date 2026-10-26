@@ -1,0 +1,21 @@
+# 全局服务配置(素材服务与 PixOffice,非 LLM)
+
+services:
+  comfyui:
+    base_url: http://127.0.0.1:8188      # 生图/生视频(Qwen-Image/LTX-2/MiniMax H3/Wan2.2)
+    workflows_dir: ~/ComfyUI/user/default/workflows
+
+  tts:
+    driver: qwen3-tts                    # 本地 ~/qwen3-tts-service,按需启动
+    base_url: http://127.0.0.1:9210      # 待服务启动后核实端口
+
+  ffmpeg: ffmpeg                         # PATH 中的 ffmpeg 8
+
+pixoffice:
+  base_url: http://127.0.0.1:8767        # 247 上的 PixOffice 服务器模式
+  api_key_env: PIXOFFICE_API_KEY         # 未设置时用演示 key
+  watch_interval: 3                      # bridge/watch.py 轮询秒数
+
+paths:
+  runs: runs                             # 任务产物根目录
+  skills_global: ~/.claude/skills        # 全局技能(编排器按 agent 声明软链)
