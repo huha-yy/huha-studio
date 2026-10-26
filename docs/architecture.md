@@ -77,6 +77,6 @@ huha-studio/
 ## 待办规划(顺序)
 
 1. ✅ 架构决策与分工表(本文档)
-2. ⬜ 流水线与编排引擎设计(pipeline yaml 格式、runner 调度、产物规范)
-3. ⬜ PixOffice 桥接设计(状态映射、决策菜单触发点)
+2. ✅ 流水线与编排引擎设计(docs/pipeline-design.md)
+3. ✅ PixOffice 桥接设计(docs/pixoffice-bridge-design.md)
 4. ⬜ 动工实施
