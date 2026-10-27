@@ -149,8 +149,23 @@ def outputs_exist(task_dir, stage):
     return missing
 
 
+def bridge_ask(kind, team, title, desc, options=None, timeout=180):
+    """优先走 PixOffice 决策菜单;离线/超时返回 None(降级终端)。"""
+    cmd = [sys.executable, str(ROOT / 'bridge' / 'ask.py'), kind, '--team', team,
+           '--title', title, '--desc', desc, '--timeout', str(timeout)]
+    if options:
+        cmd += ['--options', json.dumps(options, ensure_ascii=False)]
+    try:
+        r = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout + 30)
+        if r.returncode == 0 and r.stdout.strip():
+            return r.stdout.strip()
+    except subprocess.TimeoutExpired:
+        pass
+    return None
+
+
 def ask_human(kind, task_dir, stage, auto):
-    """两段式人工介入。auto=True 时自动选第一个/通过,便于无人值守冒烟。"""
+    """两段式人工介入:优先 PixOffice 决策菜单,降级终端;auto 时自动拍板。"""
     stage_dir = task_dir / stage['dir']
     if kind == 'brief':
         cands_file = stage_dir / 'candidates.json'
@@ -160,14 +175,20 @@ def ask_human(kind, task_dir, stage, auto):
         cands = json.loads(cands_file.read_text()).get('candidates', [])
         if not cands:
             return
+        opts = {c['id']: c['title'] for c in cands}
         if auto:
             choice = cands[0]['id']
             log(f"  [auto] 已自动选择候选 {choice}")
         else:
-            print('\n===== 选题候选,请拍板 =====')
-            for c in cands:
-                print(f"  [{c['id']}] {c['title']} — {c.get('hook', '')}")
-            choice = input('输入编号回车(默认A): ').strip().upper() or 'A'
+            choice = bridge_ask('choice', 'studio-creative', '选题拍板',
+                                '请选择本次拍摄选题', opts, 180)
+            if choice is None:
+                print('\n===== 选题候选,请拍板(PixOffice 离线,终端模式)=====')
+                for c in cands:
+                    print(f"  [{c['id']}] {c['title']} — {c.get('hook', '')}")
+                choice = input('输入编号回车(默认A): ').strip().upper() or 'A'
+            else:
+                log(f"  [PixOffice] 人选: {choice}")
         (stage_dir / 'decision.json').write_text(
             json.dumps({'choice': choice}, ensure_ascii=False, indent=1))
         log(f"  人选: {choice} → decision.json")
@@ -178,9 +199,15 @@ def ask_human(kind, task_dir, stage, auto):
             ok = verdict.get('pass', True)
             log(f"  [auto] 按 verdict.pass={ok} 自动处理")
         else:
-            print('\n===== 人工终审 =====')
-            print(json.dumps(verdict, ensure_ascii=False, indent=1)[:600])
-            ok = input('通过发布?(y/n,默认y): ').strip().lower() != 'n'
+            r = bridge_ask('confirm', 'studio-post', '发布审核',
+                           json.dumps(verdict, ensure_ascii=False)[:200], None, 120)
+            if r is None:
+                print('\n===== 人工终审 =====')
+                print(json.dumps(verdict, ensure_ascii=False, indent=1)[:600])
+                ok = input('通过发布?(y/n,默认y): ').strip().lower() != 'n'
+            else:
+                ok = r == 'yes'
+                log(f"  [PixOffice] 终审: {'通过' if ok else '打回'}")
         (stage_dir / 'final-decision.json').write_text(
             json.dumps({'approved': ok}, ensure_ascii=False))
         log(f"  终审: {'通过' if ok else '打回'}")
