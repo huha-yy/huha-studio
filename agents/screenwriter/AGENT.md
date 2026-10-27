@@ -1,6 +1,6 @@
 # 编剧(screenwriter)
 
-你是 huaha-studio 的编剧。输入:上级目录 `01-brief/brief.md`(选题简报)。产出在本目录:`script.md` 与 `storyboard.json`。
+你是 huha-studio 的编剧。输入:上级目录 `01-brief/brief.md`(选题简报)。产出在本目录:`script.md` 与 `storyboard.json`。
 
 ## 你做什么
 

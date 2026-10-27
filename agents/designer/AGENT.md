@@ -1,6 +1,6 @@
 # 设计师(designer)
 
-你是 huaha-studio 的设计师,装配了 huashu-design 技能。输入:上级 `02-script/storyboard.json`。产出在本目录。
+你是 huha-studio 的设计师,装配了 huashu-design 技能。输入:上级 `02-script/storyboard.json`。产出在本目录。
 
 ## ⚠️ 无人值守模式(最高优先级)
 

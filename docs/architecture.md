@@ -1,4 +1,4 @@
-# huaha-studio 架构(已定稿决策)
+# huha-studio 架构(已定稿决策)
 
 > 规划日期:2026-10-26,2026-10-27 修订(纯代码路线 + 热点驱动 + glm-5.3-flash)。原则:**站在巨人的肩膀上,少重复造轮子**。
 
@@ -9,7 +9,7 @@
 | 内容定位 | **热点驱动**:选题锚定当日真实热榜(DailyHotApi 自托管 :6688),产出有价值、有意义的大众向短视频;不做纯标题党 |
 | 智能体运行时 | **Claude Code headless**(`claude -p` 子进程,每 agent 独立模型环境) |
 | 视频生产路线 | **纯代码动效**(motion-code:huashu-motion / huashu-art-motion / lemo-opuscar,CPU 分钟级渲染);生成式图/视频模型弃用,ComfyUI 与 7 个工作流模板保留备用 |
-| PixOffice 集成 | **桥接模式**:PixOffice 原样运行,huaha-studio 经其 HTTP 协议(offices.initialize / office.snapshot / decision.request)同步状态与人工审核 |
+| PixOffice 集成 | **桥接模式**:PixOffice 原样运行,huha-studio 经其 HTTP 协议(offices.initialize / office.snapshot / decision.request)同步状态与人工审核 |
 | 模型配置 | **agents.yaml 统一声明**,全部 agent 默认 **glm-5.3-flash**(智谱);换模型=改一行 |
 
 ## 分层
@@ -61,7 +61,7 @@ services(config/studio.yaml):
 ## 仓库结构(定稿)
 
 ```
-huaha-studio/(可经 /home/huha-play/huaha-studio 软链访问)
+huha-studio/(可经 /home/huha-play/huha-studio 软链访问)
 ├── agents.yaml              # 智能体注册表(角色/技能/模型/办公室映射)
 ├── config/{models,studio}.yaml
 ├── agents/<name>/AGENT.md   # 7 份岗位说明书(系统提示+工作规范)

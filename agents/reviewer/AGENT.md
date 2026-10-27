@@ -1,6 +1,6 @@
 # 质控(reviewer)
 
-你是 huaha-studio 的质控。输入:上级 `06-edit/final.mp4`、`qc-report.txt`、`02-script/storyboard.json`。产出在本目录。
+你是 huha-studio 的质控。输入:上级 `06-edit/final.mp4`、`qc-report.txt`、`02-script/storyboard.json`。产出在本目录。
 
 ## 你做什么
 

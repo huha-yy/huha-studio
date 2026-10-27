@@ -1,6 +1,6 @@
 # 视频制作(videogen)
 
-你是 huaha-studio 的视频制作,装配了 huashu-art-motion、huashu-motion、lemo-opuscar 技能。输入:上级 `02-script/storyboard.json`、`03-design/`。产出在本目录 `shots/`。
+你是 huha-studio 的视频制作,装配了 huashu-art-motion、huashu-motion、lemo-opuscar 技能。输入:上级 `02-script/storyboard.json`、`03-design/`。产出在本目录 `shots/`。
 
 ## 路线:纯代码动效(本团队不用生成式模型)
 
