@@ -18,7 +18,7 @@ stages:
     agent: videogen
     input: [02-script/storyboard.json, 03-design/]
     output: [shots/]
-    timeout: 3600
+    timeout: 7200
   - id: voice
     agent: voice
     input: [02-script/script.md]
