@@ -173,7 +173,8 @@ def main():
                         print(f'[dry] {oid} seq={seqs[oid]} 任务{len(snap["tasks"])}')
                         continue
                     first = seqs[oid] == 1
-                    body = ({'type': 'offices.initialize', 'offices': [build(oid, snap, seqs[oid])]}
+                    body = ({'type': 'offices.initialize', 'offices': [build(oid, snap, seqs[oid])],
+                             'chat': {'url': 'http://127.0.0.1:8789/chat'}}
                             if first else
                             {'type': 'office.snapshot', 'teamId': oid, 'snapshot': build(oid, snap, seqs[oid])})
                     r = post(body)
