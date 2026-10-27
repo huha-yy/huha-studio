@@ -102,6 +102,53 @@ def agent_report(agent, team):
         'description': text, 'fields': [], 'actions': []}}
 
 
+def _find_run_stage(task_id):
+    """'20261027-003-xxx-brief' → (run_dir, stage_id)。总览任务(main-*)返回 None。"""
+    if not task_id or '-' not in task_id or task_id.startswith('main-'):
+        return None, None
+    stage = task_id.rsplit('-', 1)[1]
+    stem = task_id.rsplit('-', 1)[0]
+    runs = ROOT / 'runs'
+    if runs.exists():
+        for d in runs.iterdir():
+            if d.name == stem or d.name.startswith(stem):
+                return d, stage
+    return None, None
+
+
+def handle_task_op(action):
+    """任务操作真连流水线:block=打回已完成阶段(resume 时重跑);complete=跳过未开始阶段。"""
+    tid = action['taskId']
+    run_dir, stage = _find_run_stage(tid)
+    if not run_dir:
+        return respond(action['id'], {'target': 'result', 'success': False,
+                                      'message': '总览任务不可直接操作,请进入具体视频会话'})
+    f = run_dir / 'state.json'
+    st = json.loads(f.read_text())
+    cell = st['stages'].get(stage)
+    if not cell:
+        return respond(action['id'], {'target': 'result', 'success': False, 'message': f'未知阶段:{stage}'})
+    kind = action['action']
+    if kind == 'task.block':
+        if cell['status'] == 'running':
+            return respond(action['id'], {'target': 'result', 'success': False,
+                                          'message': '该阶段正在运行,等它结束后再打回(或先停掉流水线)'})
+        cell['status'] = 'failed'
+        cell['error'] = '人工打回(办公室页面)'
+        f.write_text(json.dumps(st, ensure_ascii=False, indent=1))
+        return respond(action['id'], {'target': 'result', 'success': True,
+                                      'message': f'已打回 {stage}。执行 resume 将重跑该阶段及其下游,打回理由可在聊天里补充给对应岗位'})
+    if kind == 'task.complete':
+        if cell['status'] == 'done':
+            return respond(action['id'], {'target': 'result', 'success': True, 'message': '该阶段本来就是完成态'})
+        cell['status'] = 'done'
+        f.write_text(json.dumps(st, ensure_ascii=False, indent=1))
+        return respond(action['id'], {'target': 'result', 'success': True,
+                                      'message': f'已将 {stage} 标记完成(跳过)。流水线 resume 时不再执行它'})
+    return respond(action['id'], {'target': 'result', 'success': True,
+                                  'message': f'已收到 {kind}(启动/改派暂由终端 resume 控制)'})
+
+
 def handle(action):
     kind = action['action']
     team, conv = action['teamId'], action['conversationId']
@@ -119,9 +166,7 @@ def handle(action):
                 return respond(action['interactionId'], agent_report(agent, team))
         return respond(action['interactionId'], {'target': 'result', 'success': False, 'message': '未知操作'})
     if kind in ('task.start', 'task.block', 'task.complete', 'task.assign'):
-        verb = {'task.start': '启动', 'task.block': '打回', 'task.complete': '完成', 'task.assign': '改派'}[kind]
-        return respond(action['id'], {'target': 'result', 'success': True,
-                                      'message': f'已记录:你想{verb}任务 {action["taskId"]}(暂不直接改动流水线,改稿请在聊天里说)'})
+        return handle_task_op(action)
     if kind == 'conversation.delete':
         with open(DELETED, 'a') as f:
             f.write(conv + '\n')

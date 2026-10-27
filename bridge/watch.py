@@ -92,7 +92,38 @@ def collect():
             'final': str(final) if final.exists() else '',
             'mtime': _stable_time(f)}
         tasks_state[st['task_id']] = st['stages']
-    return dict(list(tasks.items())[-5:]), tasks_state   # 最近 5 条
+    return tasks, tasks_state
+
+
+def _insights_for(agent, all_tasks):
+    """从全部任务状态聚合该岗位的统计(完成数/成本/时长/近期活动)。"""
+    import datetime
+    sid = STAGE_TO_AGENT.get(agent)
+    done_n = cost = dur = 0.0
+    acts = []
+    for tid, t in all_tasks.items():
+        st = t['stages'].get(sid)
+        if not st:
+            continue
+        if st['status'] == 'done':
+            done_n += 1
+            cost += st.get('cost_usd') or 0
+            dur += st.get('duration') or 0
+        acts.append({'label': f"{t['topic'][:16]}·{sid}",
+                     'occurredAt': datetime.datetime.fromtimestamp(
+                         (t['dir'] / 'state.json').stat().st_mtime).astimezone().isoformat(),
+                     'status': {'done': 'completed', 'running': 'running',
+                                'failed': 'blocked', 'pending': 'running'}.get(st['status'], 'running')})
+    acts = acts[-5:]
+    return {'scope': 'conversation',
+            'updatedAt': datetime.datetime.now().astimezone().isoformat(),
+            'periods': [{'id': 'last7Days', 'label': '近7天',
+                         'metrics': [
+                             {'id': 'stages', 'label': '完成阶段', 'value': done_n, 'unit': '个'},
+                             {'id': 'cost', 'label': '累计成本', 'value': round(cost, 2), 'unit': '美元',
+                              'sentiment': 'positive' if cost < 2 else 'neutral'},
+                             {'id': 'mins', 'label': '累计工时', 'value': round(dur / 60, 1), 'unit': '分'}],
+                         'blocks': ([{'id': 'recent', 'type': 'activity', 'title': '近期工作', 'items': acts}] if acts else [])}]}
 
 
 def conv_id(tid):
@@ -116,10 +147,12 @@ ALL_ROSTER = [('planner', '选题策划', 'data-agent'), ('screenwriter', '编�
               ('reviewer', '质控', 'review-agent'), ('ops', '运营负责人', 'office-lead')]
 
 
-def build(oid, tasks, seq):
+def build(oid, tasks, seq, all_tasks=None):
     spec = OFFICES[oid]
-    # 成员名单全编制:两办公室任一页面,6 个工位都看得到绑定成员
-    employees = [{'id': a, 'name': n, 'role': n, 'sceneActorId': actor, 'online': True}
+    all_tasks = all_tasks or tasks
+    # 成员名单全编制 + 岗位统计
+    employees = [{'id': a, 'name': n, 'role': n, 'sceneActorId': actor, 'online': True,
+                  'insights': _insights_for(a, all_tasks)}
                  for a, n, actor in ALL_ROSTER]
     deleted = set()
     df = ROOT / 'bridge' / 'deleted_convs.txt'
@@ -228,6 +261,7 @@ def main():
     while True:
         try:
             tasks, tasks_state = collect()
+            recent = dict(list(tasks.items())[-5:])
             h = json.dumps({k: {'topic': v['topic'], 'stages': v['stages'], 'final': v['final']}
                             for k, v in tasks.items()}, sort_keys=True, ensure_ascii=False).__hash__()
             for tid, stages in tasks_state.items():
@@ -250,10 +284,10 @@ def main():
                         print(f'[dry] {oid} seq={seqs[oid]} 会话{len(tasks)}')
                         continue
                     first = seqs[oid] == 1
-                    body = ({'type': 'offices.initialize', 'offices': [build(oid, tasks, seqs[oid])],
+                    body = ({'type': 'offices.initialize', 'offices': [build(oid, recent, seqs[oid], tasks)],
                              'chat': {'url': f'{CHAT_SERVER}/chat'}}
                             if first else
-                            {'type': 'office.snapshot', 'teamId': oid, 'snapshot': build(oid, tasks, seqs[oid])})
+                            {'type': 'office.snapshot', 'teamId': oid, 'snapshot': build(oid, recent, seqs[oid], tasks)})
                     r = post(body)
                     print(f'[{time.strftime("%H:%M:%S")}] {oid} seq={seqs[oid]} → {r.get("code")} '
                           f'{r.get("msg", "")[:40]}')
