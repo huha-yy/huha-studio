@@ -271,11 +271,10 @@ def build(oid, tasks, seq, all_tasks=None, meter=None):
                                         {'id': 'doing', 'title': f'在制 {active} 条', 'progress': 50 if active else 100},
                                         {'id': 'latest', 'title': f'最新:{(latest or {}).get("topic", "无")[:12]}',
                                          'progress': _progress(latest['stages'], tuple(STAGE_TO_AGENT)) if latest else 0}]}})
-    system = meter.sample() if meter else None
-    for c in convs:                      # system 属于会话级(dashboard schema)
-        c['system'] = system
+    system = meter.sample() if meter else {'cpuPercent': -1, 'memoryPercent': -1, 'networkKbps': -1}
     return {'schemaVersion': '1.0', 'seq': seq,
             'workspace': {'id': oid, 'name': spec['name']},
+            'system': system,
             'conversations': convs}
 
 
