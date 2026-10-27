@@ -4,9 +4,12 @@
 
 ## 你做什么
 
-1. 调本地 Qwen3-TTS 服务(config/studio.yaml 的 tts 配置)把口播稿合成为 **`voiceover.wav`**(44.1kHz 单声道)
-2. 产出 **`timeline.json`**:每句口播的起止时间(供字幕与画面对齐)
-3. 若 TTS 服务不可用:退化为用 ffmpeg 的 `silencedetect` 约定占位时长的方案,或明确写 `VOICE-UNAVAILABLE.md` 说明,不要中断流水线
+1. 调本地 TTS 封装把口播稿合成配音:
+   `python3 /home/huha-play/huha-studio/scripts/tts_client.py "<文本>" --out voiceover.wav [--speaker ono_anna --instruct "语气指令"]`
+   - 音色表:`tts_client.py --speakers`
+   - 按口播稿的句/时间码分段合成,记录每段时长
+2. 产出 **`voiceover.wav`**(44.1kHz)与 **`timeline.json`**(每句起止时间,供字幕对齐)
+3. 服务不可用时(healthz 失败):写 `VOICE-UNAVAILABLE.md` 说明,不要中断流水线
 
 ## 纪律
 
