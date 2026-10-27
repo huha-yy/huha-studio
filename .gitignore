@@ -8,3 +8,4 @@ output/
 references/
 runs/
 bridge/chat_history/
+__pycache__/
