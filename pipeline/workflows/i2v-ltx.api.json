@@ -1,0 +1,449 @@
+{
+ "1": {
+  "class_type": "CheckpointLoaderSimple",
+  "inputs": {
+   "ckpt_name": "ltx-2.3-22b-dev.safetensors"
+  }
+ },
+ "2": {
+  "class_type": "LTXVAudioVAELoader",
+  "inputs": {
+   "ckpt_name": "ltx-2.3-22b-dev.safetensors"
+  }
+ },
+ "3": {
+  "class_type": "LTXAVTextEncoderLoader",
+  "inputs": {
+   "text_encoder": "comfy_gemma_3_12B_it.safetensors",
+   "ckpt_name": "ltx-2.3-22b-dev.safetensors",
+   "device": "default"
+  }
+ },
+ "4": {
+  "class_type": "CLIPTextEncode",
+  "inputs": {
+   "text": "A single continuous photorealistic commercial shot in a modern clinical MRI room. Preserve the reference image composition and the exact MRI scanner and patient table. The male biomedical engineer speaks directly to camera, saying: \"This advanced MRI system delivers precise imaging and efficient clinical workflows.\" He makes one small natural open-hand gesture toward the MRI. The female biomedical engineer stands beside him, listens, blinks naturally, and nods once. Both remain in place and never cross in front of the machine. The MRI scanner and patient table remain completely stationary and retain exactly the same geometry, panels, displays, blue lighting, materials, colors, and proportions as the reference image. Realistic human skin, eyes, hands, lab coats, subtle breathing, coherent shadows, stable faces, no morphing. Locked camera with an extremely slow subtle push-in. Clean quiet clinical room tone, clear natural English speech, no music.",
+   "clip": [
+    "3",
+    0
+   ]
+  }
+ },
+ "5": {
+  "class_type": "CLIPTextEncode",
+  "inputs": {
+   "text": "cartoon, CGI, illustration, game render, plastic skin, waxy face, deformed face, asymmetrical eyes, distorted mouth, bad teeth, extra fingers, fused fingers, extra limbs, duplicated person, body morphing, face morphing, flicker, jitter, frame warping, motion blur, low resolution, soft focus, camera shake, product deformation, altered MRI geometry, moving scanner, moving patient table, changed controls, changed labels, occluded medical device, walking, large gestures, two people speaking at once, music, subtitles, text overlay, watermark",
+   "clip": [
+    "3",
+    0
+   ]
+  }
+ },
+ "6": {
+  "class_type": "LTXVConditioning",
+  "inputs": {
+   "positive": [
+    "4",
+    0
+   ],
+   "negative": [
+    "5",
+    0
+   ],
+   "frame_rate": 24.0
+  }
+ },
+ "7": {
+  "class_type": "LoadImage",
+  "inputs": {
+   "image": "openclaw-reference-699cb6ad5d4a47cdb91e19931b9e8be8.png"
+  }
+ },
+ "8": {
+  "class_type": "LTXVPreprocess",
+  "inputs": {
+   "image": [
+    "7",
+    0
+   ],
+   "img_compression": 18
+  }
+ },
+ "9": {
+  "class_type": "EmptyLTXVLatentVideo",
+  "inputs": {
+   "width": 512,
+   "height": 512,
+   "length": 73,
+   "batch_size": 1
+  }
+ },
+ "10": {
+  "class_type": "LTXVImgToVideoConditionOnly",
+  "inputs": {
+   "vae": [
+    "1",
+    2
+   ],
+   "image": [
+    "8",
+    0
+   ],
+   "latent": [
+    "9",
+    0
+   ],
+   "strength": 0.7,
+   "bypass": false
+  }
+ },
+ "11": {
+  "class_type": "LTXVEmptyLatentAudio",
+  "inputs": {
+   "frames_number": 73,
+   "frame_rate": 24.0,
+   "batch_size": 1,
+   "audio_vae": [
+    "2",
+    0
+   ]
+  }
+ },
+ "12": {
+  "class_type": "LTXVConcatAVLatent",
+  "inputs": {
+   "video_latent": [
+    "10",
+    0
+   ],
+   "audio_latent": [
+    "11",
+    0
+   ]
+  }
+ },
+ "13": {
+  "class_type": "LoraLoaderModelOnly",
+  "inputs": {
+   "model": [
+    "1",
+    0
+   ],
+   "lora_name": "ltxv/ltx2/ltx-2.3-22b-distilled-lora-384-1.1.safetensors",
+   "strength_model": 0.25
+  }
+ },
+ "14": {
+  "class_type": "GuiderParameters",
+  "inputs": {
+   "modality": "AUDIO",
+   "cfg": 7.0,
+   "stg": 0.0,
+   "perturb_attn": false,
+   "rescale": 1.0,
+   "modality_scale": 3.0,
+   "skip_step": 0,
+   "cross_attn": true
+  }
+ },
+ "15": {
+  "class_type": "GuiderParameters",
+  "inputs": {
+   "modality": "VIDEO",
+   "cfg": 3.0,
+   "stg": 0.0,
+   "perturb_attn": false,
+   "rescale": 0.45,
+   "modality_scale": 3.0,
+   "skip_step": 0,
+   "cross_attn": true,
+   "parameters": [
+    "14",
+    0
+   ]
+  }
+ },
+ "16": {
+  "class_type": "MultimodalGuider",
+  "inputs": {
+   "model": [
+    "13",
+    0
+   ],
+   "positive": [
+    "6",
+    0
+   ],
+   "negative": [
+    "6",
+    1
+   ],
+   "parameters": [
+    "15",
+    0
+   ],
+   "skip_blocks": ""
+  }
+ },
+ "17": {
+  "class_type": "RandomNoise",
+  "inputs": {
+   "noise_seed": 22072026
+  }
+ },
+ "18": {
+  "class_type": "ClownSampler_Beta",
+  "inputs": {
+   "eta": 0.25,
+   "sampler_name": "res_2s",
+   "seed": 22072026,
+   "bongmath": true
+  }
+ },
+ "19": {
+  "class_type": "LTXVScheduler",
+  "inputs": {
+   "steps": 15,
+   "max_shift": 2.05,
+   "base_shift": 0.95,
+   "stretch": true,
+   "terminal": 0.1,
+   "latent": [
+    "12",
+    0
+   ]
+  }
+ },
+ "20": {
+  "class_type": "SamplerCustomAdvanced",
+  "inputs": {
+   "noise": [
+    "17",
+    0
+   ],
+   "guider": [
+    "16",
+    0
+   ],
+   "sampler": [
+    "18",
+    0
+   ],
+   "sigmas": [
+    "19",
+    0
+   ],
+   "latent_image": [
+    "12",
+    0
+   ]
+  }
+ },
+ "21": {
+  "class_type": "LTXVSeparateAVLatent",
+  "inputs": {
+   "av_latent": [
+    "20",
+    0
+   ]
+  }
+ },
+ "22": {
+  "class_type": "LatentUpscaleModelLoader",
+  "inputs": {
+   "model_name": "ltx-2.3-spatial-upscaler-x2-1.1.safetensors"
+  }
+ },
+ "23": {
+  "class_type": "LTXVLatentUpsampler",
+  "inputs": {
+   "samples": [
+    "21",
+    0
+   ],
+   "upscale_model": [
+    "22",
+    0
+   ],
+   "vae": [
+    "1",
+    2
+   ]
+  }
+ },
+ "24": {
+  "class_type": "LTXVImgToVideoConditionOnly",
+  "inputs": {
+   "vae": [
+    "1",
+    2
+   ],
+   "image": [
+    "8",
+    0
+   ],
+   "latent": [
+    "23",
+    0
+   ],
+   "strength": 1.0,
+   "bypass": false
+  }
+ },
+ "25": {
+  "class_type": "LTXVConcatAVLatent",
+  "inputs": {
+   "video_latent": [
+    "24",
+    0
+   ],
+   "audio_latent": [
+    "21",
+    1
+   ]
+  }
+ },
+ "26": {
+  "class_type": "LoraLoaderModelOnly",
+  "inputs": {
+   "model": [
+    "1",
+    0
+   ],
+   "lora_name": "ltxv/ltx2/ltx-2.3-22b-distilled-lora-384-1.1.safetensors",
+   "strength_model": 0.5
+  }
+ },
+ "27": {
+  "class_type": "CFGGuider",
+  "inputs": {
+   "model": [
+    "26",
+    0
+   ],
+   "positive": [
+    "6",
+    0
+   ],
+   "negative": [
+    "6",
+    1
+   ],
+   "cfg": 1.0
+  }
+ },
+ "28": {
+  "class_type": "RandomNoise",
+  "inputs": {
+   "noise_seed": 22072027
+  }
+ },
+ "29": {
+  "class_type": "ClownSampler_Beta",
+  "inputs": {
+   "eta": 0.25,
+   "sampler_name": "res_2s",
+   "seed": 22072027,
+   "bongmath": true
+  }
+ },
+ "30": {
+  "class_type": "ManualSigmas",
+  "inputs": {
+   "sigmas": "0.909375, 0.725, 0.421875, 0.0"
+  }
+ },
+ "31": {
+  "class_type": "SamplerCustomAdvanced",
+  "inputs": {
+   "noise": [
+    "28",
+    0
+   ],
+   "guider": [
+    "27",
+    0
+   ],
+   "sampler": [
+    "29",
+    0
+   ],
+   "sigmas": [
+    "30",
+    0
+   ],
+   "latent_image": [
+    "25",
+    0
+   ]
+  }
+ },
+ "32": {
+  "class_type": "LTXVSeparateAVLatent",
+  "inputs": {
+   "av_latent": [
+    "31",
+    0
+   ]
+  }
+ },
+ "33": {
+  "class_type": "LTXVAudioVAEDecode",
+  "inputs": {
+   "samples": [
+    "32",
+    1
+   ],
+   "audio_vae": [
+    "2",
+    0
+   ]
+  }
+ },
+ "34": {
+  "class_type": "LTXVTiledVAEDecode",
+  "inputs": {
+   "vae": [
+    "1",
+    2
+   ],
+   "latents": [
+    "32",
+    0
+   ],
+   "horizontal_tiles": 2,
+   "vertical_tiles": 2,
+   "overlap": 6,
+   "last_frame_fix": false,
+   "working_device": "auto",
+   "working_dtype": "auto"
+  }
+ },
+ "35": {
+  "class_type": "CreateVideo",
+  "inputs": {
+   "images": [
+    "34",
+    0
+   ],
+   "fps": 24.0,
+   "audio": [
+    "33",
+    0
+   ],
+   "bit_depth": 8
+  }
+ },
+ "36": {
+  "class_type": "SaveVideo",
+  "inputs": {
+   "video": [
+    "35",
+    0
+   ],
+   "filename_prefix": "video/ltx23-hq-mri-22072026",
+   "format": "mp4",
+   "codec": "h264"
+  }
+ }
+}

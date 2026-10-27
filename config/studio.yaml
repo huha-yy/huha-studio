@@ -6,8 +6,9 @@ services:
     workflows_dir: ~/ComfyUI/user/default/workflows
 
   tts:
-    driver: qwen3-tts                    # 本地 ~/qwen3-tts-service,按需启动
-    base_url: http://127.0.0.1:9210      # 待服务启动后核实端口
+    driver: qwen3-tts                    # systemd --user start qwen3-tts
+    base_url: http://127.0.0.1:8001      # POST /synthesize {text,language,speaker,instruct}
+    default_speaker: ono_anna            # 音色表:GET /healthz 的 speakers
 
   ffmpeg: ffmpeg                         # PATH 中的 ffmpeg 8
 

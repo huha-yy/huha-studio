@@ -1,0 +1,30 @@
+{
+ "t2v-fast": {
+  "source": "文生视频-快速4步.json",
+  "nodes": 23
+ },
+ "t2v-hq": {
+  "source": "文生视频-高清8步.json",
+  "nodes": 23
+ },
+ "flf2v": {
+  "source": "首尾帧转视频-4步.json",
+  "nodes": 26
+ },
+ "ref2v": {
+  "source": "角色参考视频-4步.json",
+  "nodes": 26
+ },
+ "video-enhance": {
+  "source": "视频增强-修复版.json",
+  "nodes": 8
+ },
+ "image-edit": {
+  "source": "image_qwen_image_edit_2511.json",
+  "nodes": 25
+ },
+ "i2v-ltx": {
+  "source": "ltx23_hq_i2v_api.json",
+  "nodes": 36
+ }
+}
