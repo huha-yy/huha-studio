@@ -9,3 +9,8 @@ references/
 runs/
 bridge/chat_history/
 __pycache__/
+pixoffice/public/*-assets/
+pixoffice/packages/*/dist/
+pixoffice/server/dist/
+pixoffice/node_modules/
+pixoffice/.vite-temp/

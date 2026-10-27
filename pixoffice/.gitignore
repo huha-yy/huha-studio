@@ -1,0 +1,78 @@
+# Dependencies and package-manager caches
+node_modules/
+.npm/
+.pnpm-store/
+
+# Build output and tool caches
+dist/
+.vite/
+.cache/
+.eslintcache
+*.tsbuildinfo
+.vercel/
+
+# Generated character atlases (keep sources in art/characters/)
+/public/characters/
+/public/asset-packs/
+/example/isolated-scene/public/
+/example/classroom/public/
+/public/classroom-assets/
+/public/farm-assets/
+/example/farm/public/
+/example/dimetric/public/
+/.character-staging/
+/.character-backups/
+/.character-preview/
+/public/.character-publish-*/
+
+# Generated office WebP copies (scripts/build-office-assets.mjs)
+/public/assets/office/office.webp
+/public/assets/office/desk.webp
+/public/assets/office/chair.webp
+/public/assets/office/workstation-trial-v1/desk.webp
+/public/assets/office/workstation-trial-v1/chair.webp
+/public/assets/office/workstation-trial-v1/computer.webp
+/public/assets/office/reference-v1/room-whiteboard-v3.webp
+/public/assets/office/reference-v1/conference-table.webp
+/public/assets/office/reference-v1/desk-accessories.webp
+/public/assets/office/effects/work-crafting-lite-v1.webp
+/public/assets/office/effects/work-crafting-lite-v1.png
+
+# Interrupted asset builds and character publications
+/public/assets/office/**/*.webp.tmp-*
+/public/assets/office/effects/work-crafting-lite-v1.png.tmp-*
+/art/characters/packs/.publish.lock
+/art/characters/packs/.*-candidate-*/
+
+# Local environment files (keep shareable templates)
+.env
+.env.*
+!.env.example
+!.env.*.example
+!.env.sample
+!.env.*.sample
+!.env.template
+!.env.*.template
+
+# Runtime logs and test reports
+/.dev-server.log
+/logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+/coverage/
+/.nyc_output/
+/tests/artifacts/
+
+# Local editor files (shared editor configuration stays trackable)
+.idea/
+*.swp
+*.swo
+*~
+
+# Operating-system metadata
+.DS_Store
+._*
+Thumbs.db
+Desktop.ini
