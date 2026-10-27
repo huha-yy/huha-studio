@@ -359,6 +359,10 @@ def main():
                             if first else
                             {'type': 'office.snapshot', 'teamId': oid, 'snapshot': build(oid, recent, seqs[oid], tasks, sysd)})
                     r = post(body)
+                    if r.get('code') == 404:      # 服务端重启丢态 → 下一轮重新初始化
+                        seqs[oid] = 0
+                        print(f'[{time.strftime("%H:%M:%S")}] {oid} 服务端无此办公室,转为重新初始化')
+                        continue
                     print(f'[{time.strftime("%H:%M:%S")}] {oid} seq={seqs[oid]} → {r.get("code")} '
                           f'{r.get("msg", "")[:40]}')
                 last_hash = h
