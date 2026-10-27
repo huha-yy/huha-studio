@@ -63,6 +63,8 @@ def agent_status(agent):
     if not st:
         return '暂无任务'
     sid = STAGE_OF.get(agent)
+    if not sid:
+        return f"常驻岗(不跑具体阶段),当前任务《{st['topic'][:18]}》"
     s = st['stages'].get(sid, {})
     return f"任务《{st['topic'][:18]}》 {sid}:{s.get('status', '?')}"
 

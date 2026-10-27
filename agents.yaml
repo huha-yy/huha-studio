@@ -51,3 +51,10 @@ agents:
     model: { provider: zhipu, model: glm-5.3-flash }
     skills: []
     office: { id: studio-post, actor: review-agent }
+
+  ops:
+    name: 运营负责人
+    description: 发布管理、数据回流与复盘;对外代表团队,对内协调全流程
+    model: { provider: zhipu, model: glm-5.3-flash }
+    skills: []
+    office: { id: studio-creative, actor: office-lead }

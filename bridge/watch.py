@@ -28,10 +28,11 @@ CHAT_SERVER = 'http://127.0.0.1:8789'
 OFFICES = {
     'studio-creative': {'name': '创意中心', 'agents': {
         'planner': ('选题策划', 'data-agent'), 'screenwriter': ('编剧', 'app-agent'),
-        'designer': ('设计师', 'file-agent'), 'videogen': ('视频制作', 'code-agent')}},
+        'designer': ('设计师', 'file-agent'), 'videogen': ('视频制作', 'code-agent'),
+        'ops': ('运营负责人', 'office-lead')}},
     'studio-post': {'name': '后期车间', 'agents': {
         'voice': ('配音', 'data-agent'), 'editor': ('剪辑', 'code-agent'),
-        'reviewer': ('质控', 'review-agent')}},
+        'reviewer': ('质控', 'review-agent'), 'ops': ('运营负责人', 'office-lead')}},
 }
 STAGE_TO_AGENT = {'brief': 'planner', 'script': 'screenwriter', 'design': 'designer',
                   'video': 'videogen', 'voice': 'voice', 'edit': 'editor', 'review': 'reviewer'}
