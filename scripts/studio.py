@@ -67,10 +67,10 @@ def write_state(task_dir, state):
 def new_task(pipeline, topic):
     RUNS.mkdir(exist_ok=True)
     today = time.strftime('%Y%m%d')
-    n = 1
-    while (RUNS / f'{today}-{n:03d}').exists():
-        n += 1
     slug = re.sub(r'[^\w-]+', '-', topic)[:24].strip('-')
+    n = 1
+    while any(d.name.startswith(f'{today}-{n:03d}') for d in RUNS.iterdir()):
+        n += 1
     task_id = f'{today}-{n:03d}' + (f'-{slug}' if slug else '')
     task_dir = RUNS / task_id
     task_dir.mkdir(parents=True)
