@@ -6,48 +6,48 @@ agents:
   planner:
     name: 选题策划
     description: 从选题库/热点/参考打法中产出选题简报,给三个方向供人拍板
-    model: { provider: zhipu, model: glm-4.6 }   # DEEPSEEK_API_KEY 到位后可切 deepseek/deepseek-chat
+    model: { provider: zhipu, model: glm-5.3-flash }   # DEEPSEEK_API_KEY 到位后可切 deepseek/deepseek-chat
     skills: []
     office: { id: studio-creative, actor: data-agent }
 
   screenwriter:
     name: 编剧
     description: 把选题简报写成口播稿+分镜表(每个镜头:画面描述/时长/运镜)
-    model: { provider: zhipu, model: glm-4.6 }
+    model: { provider: zhipu, model: glm-5.3-flash }
     skills: []
     office: { id: studio-creative, actor: app-agent }
 
   designer:
     name: 设计师
     description: 封面、视觉包装、信息图;按分镜产出视觉资产与首帧参考图
-    model: { provider: zhipu, model: glm-4.6 }
+    model: { provider: zhipu, model: glm-5.3-flash }
     skills: [huashu-design]
     office: { id: studio-creative, actor: file-agent }
 
   videogen:
     name: 视频制作
     description: 调 ComfyUI 生成分镜画面与视频片段;代码动画类内容用动效技能直出
-    model: { provider: zhipu, model: glm-4.6 }
+    model: { provider: zhipu, model: glm-5.3-flash }
     skills: [huashu-art-motion, huashu-motion, lemo-opuscar]
     office: { id: studio-creative, actor: code-agent }
 
   voice:
     name: 配音
     description: 口播稿转配音(Qwen3-TTS),管理音色与时间轴
-    model: { provider: zhipu, model: glm-4.6 }   # 轻量环节,后续可切 glm-4.5-air 省额度
+    model: { provider: zhipu, model: glm-5.3-flash }   # 轻量环节,后续可切 glm-4.5-air 省额度
     skills: []
     office: { id: studio-post, actor: data-agent }
 
   editor:
     name: 剪辑
     description: 合成视频/配音/字幕/BGM,产出竖版成片
-    model: { provider: zhipu, model: glm-4.6 }
+    model: { provider: zhipu, model: glm-5.3-flash }
     skills: [huashu-motion]
     office: { id: studio-post, actor: code-agent }
 
   reviewer:
     name: 质控
     description: 按发布检查清单审片(时长/字幕/画质/合规),产出审核结论触发人工终审
-    model: { provider: zhipu, model: glm-4.6 }
+    model: { provider: zhipu, model: glm-5.3-flash }
     skills: []
     office: { id: studio-post, actor: review-agent }
