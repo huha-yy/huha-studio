@@ -126,6 +126,16 @@ def _insights_for(agent, all_tasks):
                          'blocks': ([{'id': 'recent', 'type': 'activity', 'title': '近期工作', 'items': acts}] if acts else [])}]}
 
 
+def _lifecycle(stages):
+    """completed=全部done;aborted=无pending/running但有failed;active=其余。"""
+    vals = [v['status'] for v in stages.values()]
+    if all(v == 'done' for v in vals):
+        return 'completed'
+    if any(v in ('running', 'pending') for v in vals):
+        return 'active'
+    return 'aborted'
+
+
 def conv_id(tid):
     """会话 id 须匹配 ^[a-zA-Z0-9_.:-]+$:取任务号前缀(日期-序号),唯一且合法。"""
     parts = tid.split('-')
@@ -164,10 +174,11 @@ def build(oid, tasks, seq, all_tasks=None):
             continue
         total = len(t['stages'])
         done = sum(1 for s in t['stages'].values() if s['status'] == 'done')
-        finished = done == total
+        life = _lifecycle(t['stages'])
+        finished = life == 'completed'
         board = {'template': 'task-board-v1', 'title': t['topic'][:38],
-                 'status': 'completed' if finished else 'running',
-                 'tagline': f'{done}/{total} 阶段',
+                 'status': 'completed' if finished else ('failed' if life == 'aborted' else 'running'),
+                 'tagline': f"{'✅' if finished else ('已中止' if life == 'aborted' else '制作中')} {done}/{total} 阶段",
                  'description': '选题 → 剧本 → 视觉 → 视频 → 配音 → 合成 → 审核',
                  'steps': [
                      {'id': 'c', 'title': '创意', 'progress': _progress(t['stages'], ('brief', 'script'))},
@@ -188,8 +199,10 @@ def build(oid, tasks, seq, all_tasks=None):
                       'employees': employees, 'tasks': tasks_list, 'events': []})
     # 永久保留 main 总览会话:任何旧选中/默认会话永远合法
     items = list(tasks.values())
-    finished = sum(1 for t in items if all(x['status'] == 'done' for x in t['stages'].values()))
-    active = len(items) - finished
+    lifes = [_lifecycle(t['stages']) for t in items]
+    finished = lifes.count('completed')
+    aborted = lifes.count('aborted')
+    active = lifes.count('active')
     latest = list(tasks.values())[-1] if items else None
     overview_tasks = []
     if latest:
