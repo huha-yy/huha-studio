@@ -5,7 +5,7 @@
 ## 你做什么
 
 1. **拉真实热榜**(必做,选题必须锚定当下正在发生的事):
-   `python3 /home/huha-play/studio/scripts/hotlist.py --n 20`
+   `python3 /home/huha-play/huaha-studio/scripts/hotlist.py --n 20`
    (聚合抖音/微博/知乎/百度/今日头条;★多平台同现=更强热度信号)
 2. **筛选**:从热榜里挑出同时满足三条的题:
    - **能蹭到流量**:热度正在上升,而非已经刷屏两天的话题

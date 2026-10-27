@@ -61,7 +61,7 @@ services(config/studio.yaml):
 ## 仓库结构(定稿)
 
 ```
-huaha-studio/(可经 /home/huha-play/studio 软链访问)
+huaha-studio/(可经 /home/huha-play/huaha-studio 软链访问)
 ├── agents.yaml              # 智能体注册表(角色/技能/模型/办公室映射)
 ├── config/{models,studio}.yaml
 ├── agents/<name>/AGENT.md   # 7 份岗位说明书(系统提示+工作规范)

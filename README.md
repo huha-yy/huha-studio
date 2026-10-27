@@ -38,7 +38,7 @@
 ## 快速开始
 
 ```bash
-cd /home/huha-play/studio
+cd /home/huha-play/huaha-studio
 python3 scripts/studio.py run short-video --topic "今日热榜热点,由策划自行选题"   # 人工拍板版
 python3 scripts/studio.py run short-video --topic "..." --auto                  # 无人值守冒烟
 python3 scripts/studio.py status / list / resume <task-id>
