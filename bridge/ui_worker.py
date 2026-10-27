@@ -22,15 +22,9 @@ KEY = os.environ.get(CFG.get('api_key_env', 'PIXOFFICE_API_KEY'), 'pixoffice-dem
 AGENTS = yaml.safe_load((ROOT / 'agents.yaml').read_text())['agents']
 DELETED = ROOT / 'bridge' / 'deleted_convs.txt'
 
-OFFICES = {
-    'studio-creative': {'name': '创意中心', 'agents': {
-        'planner': 'data-agent', 'screenwriter': 'app-agent',
-        'designer': 'file-agent', 'videogen': 'code-agent'}},
-    'studio-post': {'name': '后期车间', 'agents': {
-        'voice': 'data-agent', 'editor': 'code-agent', 'reviewer': 'review-agent'}},
-}
-ACTOR_TO_AGENT = {actor: (agent, team) for team, o in OFFICES.items()
-                  for agent, actor in o['agents'].items()}
+from watch import ALL_ROSTER   # 单一名单源:id/名/工位
+
+ACTOR_TO_AGENT = {actor: aid for aid, _n, actor in ALL_ROSTER}
 STAGE_OF = {'planner': 'brief', 'screenwriter': 'script', 'designer': 'design',
             'videogen': 'video', 'voice': 'voice', 'editor': 'edit', 'reviewer': 'review'}
 
@@ -78,7 +72,7 @@ def dialog_card(agent, team):
     a = AGENTS[agent]
     return {'target': 'dialog', 'content': {
         'template': 'detail-v1',
-        'title': f"{a['name']} · {OFFICES[team]['name']}",
+        'title': f"{a['name']}",
         'description': a['description'],
         'fields': [
             {'label': '装备技能', 'value': ', '.join(a.get('skills') or ['无'])},
@@ -113,9 +107,9 @@ def handle(action):
     team, conv = action['teamId'], action['conversationId']
     if kind in ('actor.inspect', 'employee.inspect'):
         who = action.get('actorId') or action.get('employeeId')
-        agent, t2 = ACTOR_TO_AGENT.get(who, (who, team))
+        agent = ACTOR_TO_AGENT.get(who, who)
         if agent in AGENTS:
-            return respond(action['id'], dialog_card(agent, t2 if kind == 'actor.inspect' else team))
+            return respond(action['id'], dialog_card(agent, team))
         return respond(action['id'], {'target': 'result', 'success': False, 'message': '未登记的成员'})
     if kind == 'dialog.action':
         opt = action['optionId']
@@ -141,7 +135,7 @@ def main():
         try:
             r = post({'type': 'ui.next', 'timeoutMs': 25000}, timeout=35)
             for a in (r.get('data', {}).get('actions') or []):
-                print(f"[{time.strftime('%H:%M:%S')}] 动作:{json.dumps(a, ensure_ascii=False)[:120]}")
+                print(f"[{time.strftime('%H:%M:%S')}] 动作:{json.dumps(a, ensure_ascii=False)}")
                 handle(a)
         except Exception as e:
             print(f'轮询异常:{e}', flush=True)
