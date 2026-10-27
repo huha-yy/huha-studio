@@ -113,8 +113,14 @@ def build(oid, tasks, seq):
     spec = OFFICES[oid]
     employees = [{'id': a, 'name': n, 'role': n, 'sceneActorId': actor, 'online': True}
                  for a, (n, actor) in spec['agents'].items()]
+    deleted = set()
+    df = ROOT / 'bridge' / 'deleted_convs.txt'
+    if df.exists():
+        deleted = {l.strip() for l in df.read_text().splitlines() if l.strip()}
     convs = []
     for tid, t in reversed(tasks.items()):          # 新任务排前
+        if conv_id(tid) in deleted:
+            continue
         total = len(t['stages'])
         done = sum(1 for s in t['stages'].values() if s['status'] == 'done')
         finished = done == total
