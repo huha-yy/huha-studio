@@ -20,3 +20,5 @@ pixoffice:
 paths:
   runs: runs                             # 任务产物根目录
   skills_global: ~/.claude/skills        # 全局技能(编排器按 agent 声明软链)
+
+runs_server: http://192.168.10.247:8899   # 成片文件服务(办公室白板/审片报告链接指向这里)

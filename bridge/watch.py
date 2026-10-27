@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
 """PixOffice 桥接 · watch:流水线状态 → 办公室画面
 
-常驻进程,轮询 runs/*/state.json,变化即推送 office.snapshot;
-阶段开始/完成/失败时给对应小人发 scene.say 气泡。
-设计见 docs/pixoffice-bridge-design.md。
+核心模型:**每条视频 = 一个会话**(conversation),双办公室各挂同一会话;
+白板=该片进度,完成时白板挂成片链接;review 完成自动把审片报告注入会话聊天。
 
 用法: python3 bridge/watch.py [--interval 3] [--dry]
 """
@@ -22,8 +21,10 @@ RUNS = ROOT / 'runs'
 CFG = yaml.safe_load((ROOT / 'config' / 'studio.yaml').read_text())['pixoffice']
 BASE = CFG['base_url']
 KEY = os.environ.get(CFG.get('api_key_env', 'PIXOFFICE_API_KEY'), 'pixoffice-demo-key')
+RUNS_SERVER = yaml.safe_load((ROOT / 'config' / 'studio.yaml').read_text()).get('runs_server',
+                                                                                'http://192.168.10.247:8899')
+CHAT_SERVER = 'http://127.0.0.1:8789'
 
-# agent → (办公室, 人物);办公室定义见 docs/architecture.md
 OFFICES = {
     'studio-creative': {'name': '创意中心', 'agents': {
         'planner': ('选题策划', 'data-agent'), 'screenwriter': ('编剧', 'app-agent'),
@@ -38,13 +39,12 @@ TASK_STATUS = {'pending': 'queued', 'running': 'running', 'failed': 'blocked', '
 OFFICE_OF = {a: oid for oid, o in OFFICES.items() for a in o['agents']}
 QUOTES = {
     'running': {'planner': '在看选题库,找今天能爆的…', 'screenwriter': '写口播稿,先把钩子磨尖…',
-                'designer': '出封面方案,定视觉基调…', 'videogen': '分镜生成中,一条条来…',
+                'designer': '出封面方案,定视觉基调…', 'videogen': '分镜渲染中,一条条来…',
                 'voice': '录音中,注意语速和情绪…', 'editor': '合成时间线,对齐字幕…',
                 'reviewer': '逐项过检查清单…'},
     'done': {'planner': '选题定了!', 'screenwriter': '剧本交了!', 'designer': '封面和首帧齐了!',
              'videogen': '镜头全部产出!', 'voice': '配音完成!', 'editor': '成片出炉!',
              'reviewer': '审核完毕,等老板拍板。'},
-    'failed': None,
 }
 
 
@@ -70,77 +70,105 @@ def say(team, actor, text):
     return r.get('code')
 
 
+def _stable_time(f):
+    import datetime
+    return datetime.datetime.fromtimestamp(f.stat().st_mtime).strftime('%Y-%m-%dT%H:%M:%S.000Z')
+
+
 def collect():
-    """runs/* → 两办公室快照数据 + 每任务阶段状态(事件用)。"""
-    snapshots = {}
-    events_seen = set()
-    tasks_state = {}
-    for d in sorted(RUNS.iterdir()) if RUNS.exists() else []:
+    """runs/* → {task_id: {task_dir, topic, stages, final_url}} + 阶段状态表。"""
+    tasks, tasks_state = {}, {}
+    if not RUNS.exists():
+        return tasks, tasks_state
+    for d in sorted(RUNS.iterdir()):
         f = d / 'state.json'
-        if not f.exists():
+        if not f.exists() or not d.name[:1].isdigit():
             continue
         st = json.loads(f.read_text())
+        final = d / '06-edit' / 'final.mp4'
+        tasks[st['task_id']] = {
+            'dir': d, 'topic': st['topic'], 'stages': st['stages'],
+            'final': str(final) if final.exists() else '',
+            'mtime': _stable_time(f)}
         tasks_state[st['task_id']] = st['stages']
-        for oid, spec in OFFICES.items():
-            snap = snapshots.setdefault(oid, {
-                'employees': [{'id': a, 'name': n, 'role': n, 'sceneActorId': actor, 'online': True}
-                              for a, (n, actor) in spec['agents'].items()],
-                'tasks': [], 'events': []})
-            done = sum(1 for s in st['stages'].values() if s['status'] == 'done')
-            total = len(st['stages'])
-            snap['tasks'].append({
-                'id': f"{st['task_id']}-{oid}", 'title': st['topic'][:40],
-                'assigneeId': 'planner' if oid == 'studio-creative' else 'voice',
-                'status': 'running' if done < total else 'completed',
-                'progress': int(done * 100 / total), 'summary': f"{done}/{total} 阶段完成",
-                'updatedAt': _stable_time(d / 'state.json')})
-            for sid, s in st['stages'].items():
-                agent = STAGE_TO_AGENT.get(sid)
-                if not agent or OFFICE_OF.get(agent) != oid:
-                    continue
-                snap['tasks'].append({
-                    'id': f"{st['task_id']}-{sid}", 'title': sid, 'assigneeId': agent,
-                    'status': TASK_STATUS.get(s['status'], 'queued'), 'progress': -1,
-                    'summary': '', 'updatedAt': _stable_time(d / 'state.json')})
-    return snapshots, tasks_state
+    return dict(list(tasks.items())[-5:]), tasks_state   # 最近 5 条
 
 
-def _stable_time(f):
-    """state.json 的 mtime——状态不变则时间戳不变(避免空转烧 seq)。"""
-    import datetime
-    t = f.stat().st_mtime
-    return datetime.datetime.fromtimestamp(t).strftime('%Y-%m-%dT%H:%M:%S.000Z')
+def conv_id(tid):
+    """会话 id 须匹配 ^[a-zA-Z0-9_.:-]+$:取任务号前缀(日期-序号),唯一且合法。"""
+    parts = tid.split('-')
+    if len(parts) >= 2 and len(parts[1]) == 3 and parts[0].isdigit():
+        return f'{parts[0]}-{parts[1]}'
+    import hashlib
+    return 't-' + hashlib.md5(tid.encode()).hexdigest()[:12]
 
 
-def build(oid, snap, seq):
-    spec = OFFICES[oid]
-    total_done = sum(1 for t in snap['tasks'] if t['status'] == 'completed')
-    return {
-        'schemaVersion': '1.0', 'seq': seq,
-        'workspace': {'id': oid, 'name': spec['name']},
-        'conversations': [{
-            'id': 'main', 'title': '内容流水线',
-            'whiteboard': {'template': 'task-board-v1', 'title': '短视频流水线',
-                           'status': 'running',
-                           'description': '选题 → 剧本 → 视觉 → 视频 → 配音 → 合成 → 审核',
-                           'steps': [
-                               {'id': 'creative', 'title': '创意(选题/剧本)',
-                                'progress': _stage_progress(snap, ('brief', 'script'))},
-                               {'id': 'visual', 'title': '视觉/视频',
-                                'progress': _stage_progress(snap, ('design', 'video'))},
-                               {'id': 'post', 'title': '配音/合成/审核',
-                                'progress': _stage_progress(snap, ('voice', 'edit', 'review'))}]},
-            'employees': snap['employees'], 'tasks': snap['tasks'][:40], 'events': []}],
-    }
-
-
-def _stage_progress(snap, stages):
-    ts = [t for t in snap['tasks'] for s in stages if t['id'].endswith(f'-{s}')]
-    if not ts:
-        return 0
-    score = sum({'completed': 100, 'running': 50, 'blocked': 0, 'queued': 0}.get(t['status'], 0)
-                for t in ts) / len(ts)
+def _progress(stages, names):
+    score = sum({'done': 100, 'running': 50, 'failed': 0, 'pending': 0}.get(stages.get(n, {}).get('status'), 0)
+                for n in names) / len(names)
     return int(score)
+
+
+def build(oid, tasks, seq):
+    spec = OFFICES[oid]
+    employees = [{'id': a, 'name': n, 'role': n, 'sceneActorId': actor, 'online': True}
+                 for a, (n, actor) in spec['agents'].items()]
+    convs = []
+    for tid, t in reversed(tasks.items()):          # 新任务排前
+        total = len(t['stages'])
+        done = sum(1 for s in t['stages'].values() if s['status'] == 'done')
+        finished = done == total
+        board = {'template': 'task-board-v1', 'title': t['topic'][:38],
+                 'status': 'completed' if finished else 'running',
+                 'tagline': f'{done}/{total} 阶段',
+                 'description': '选题 → 剧本 → 视觉 → 视频 → 配音 → 合成 → 审核',
+                 'steps': [
+                     {'id': 'c', 'title': '创意', 'progress': _progress(t['stages'], ('brief', 'script'))},
+                     {'id': 'v', 'title': '视觉/视频', 'progress': _progress(t['stages'], ('design', 'video'))},
+                     {'id': 'p', 'title': '后期', 'progress': _progress(t['stages'], ('voice', 'edit', 'review'))}]}
+        if t['final']:
+            from urllib.parse import quote
+            board['link'] = {'label': '▶ 看成片', 'url': f"{RUNS_SERVER}/{quote(tid)}/06-edit/final.mp4"}
+        tasks_list = []
+        for sid, s in t['stages'].items():
+            agent = STAGE_TO_AGENT.get(sid)
+            if not agent or OFFICE_OF.get(agent) != oid:
+                continue
+            tasks_list.append({'id': f'{tid}-{sid}', 'title': f'{spec["agents"][agent][0]}·{sid}',
+                               'assigneeId': agent, 'status': TASK_STATUS.get(s['status'], 'queued'),
+                               'progress': -1, 'summary': '', 'updatedAt': t['mtime']})
+        convs.append({'id': conv_id(tid), 'title': t['topic'][:38], 'whiteboard': board,
+                      'employees': employees, 'tasks': tasks_list, 'events': []})
+    return {'schemaVersion': '1.0', 'seq': seq,
+            'workspace': {'id': oid, 'name': spec['name']},
+            'conversations': convs}
+
+
+def review_notice(tid, t):
+    """review 完成时:把审片报告注入该片会话的聊天(两办公室都发)。"""
+    report, verdict = '', {'pass': True, 'suggestions': []}
+    try:
+        verdict = json.loads((t['dir'] / '07-review' / 'verdict.json').read_text())
+        checklist = (t['dir'] / '07-review' / 'checklist.md').read_text()[:600]
+        verdict_text = '✅ 通过' if verdict.get('pass') else '❌ 打回'
+        sugs = '\n'.join(f'{i + 1}. {s}' for i, s in enumerate(verdict.get('suggestions', [])[:3]))
+        from urllib.parse import quote
+        link = f"{RUNS_SERVER}/{quote(tid)}/06-edit/final.mp4"
+        report = (f'**成片出炉:{t["topic"][:30]}**\n\n'
+                  f'[▶ 点击观看成片]({link})\n\n'
+                  f'质控结论:{verdict_text}\n\n改进建议:\n{sugs or "无"}\n\n---\n{checklist}')
+    except Exception as e:
+        report = f'成片已产出:{t["topic"][:30]}(报告读取失败:{e})'
+    body = json.dumps({'conversationId': conv_id(tid), 'user': '(审片报告)',
+                       'assistant': report}, ensure_ascii=False).encode()
+    for team in OFFICES:
+        req = urllib.request.Request(f'{CHAT_SERVER}/internal/notice?team={team}',
+                                     data=body, headers={'Content-Type': 'application/json'}, method='POST')
+        try:
+            urllib.request.urlopen(req, timeout=10)
+            print(f'  审片报告已注入 {team}/{tid}')
+        except Exception as e:
+            print(f'  报告注入失败 {team}: {e}')
 
 
 def main():
@@ -149,12 +177,21 @@ def main():
     ap.add_argument('--dry', action='store_true', help='只打印不推送')
     args = ap.parse_args()
     last_hash, seqs, last_stages = None, {}, {}
-    print(f'watch 启动:轮询 {RUNS},推送 {BASE}')
+    # 续接服务端已有 seq,避免重启后同 seq 不同快照被拒(409)
+    try:
+        directory = post({'type': 'office.read'})
+        for o in directory.get('data', {}).get('state', {}).get('offices', []):
+            oid = o['snapshot']['workspace']['id']
+            seqs[oid] = o['snapshot']['seq']
+        print(f'续接服务端 seq:{seqs or "无在线办公室"}')
+    except Exception as e:
+        print(f'seq 查询失败(忽略):{e}')
+    print(f'watch 启动:轮询 {RUNS},推送 {BASE},成片服务 {RUNS_SERVER}')
     while True:
         try:
-            snaps, tasks_state = collect()
-            h = json.dumps(snaps, sort_keys=True, ensure_ascii=False).__hash__()
-            # 事件:阶段状态变化 → 气泡
+            tasks, tasks_state = collect()
+            h = json.dumps({k: {'topic': v['topic'], 'stages': v['stages'], 'final': v['final']}
+                            for k, v in tasks.items()}, sort_keys=True, ensure_ascii=False).__hash__()
             for tid, stages in tasks_state.items():
                 for sid, s in stages.items():
                     key = (tid, sid, s['status'])
@@ -162,21 +199,23 @@ def main():
                         continue
                     last_stages.setdefault(tid, set()).add(key)
                     agent = STAGE_TO_AGENT.get(sid)
-                    quote = (QUOTES.get(s['status']) or {}).get(agent)
-                    if quote and agent in OFFICE_OF and not args.dry:
+                    quote_ = (QUOTES.get(s['status']) or {}).get(agent)
+                    if quote_ and agent in OFFICE_OF and not args.dry:
                         office, actor = OFFICE_OF[agent], OFFICES[OFFICE_OF[agent]]['agents'][agent][1]
-                        say(office, actor, quote)
+                        say(office, actor, quote_)
+                    if sid == 'review' and s['status'] == 'done' and tid in tasks and not args.dry:
+                        review_notice(tid, tasks[tid])
             if h != last_hash:
-                for oid, snap in snaps.items():
+                for oid in OFFICES:
                     seqs[oid] = seqs.get(oid, 0) + 1
                     if args.dry:
-                        print(f'[dry] {oid} seq={seqs[oid]} 任务{len(snap["tasks"])}')
+                        print(f'[dry] {oid} seq={seqs[oid]} 会话{len(tasks)}')
                         continue
                     first = seqs[oid] == 1
-                    body = ({'type': 'offices.initialize', 'offices': [build(oid, snap, seqs[oid])],
-                             'chat': {'url': 'http://127.0.0.1:8789/chat'}}
+                    body = ({'type': 'offices.initialize', 'offices': [build(oid, tasks, seqs[oid])],
+                             'chat': {'url': f'{CHAT_SERVER}/chat'}}
                             if first else
-                            {'type': 'office.snapshot', 'teamId': oid, 'snapshot': build(oid, snap, seqs[oid])})
+                            {'type': 'office.snapshot', 'teamId': oid, 'snapshot': build(oid, tasks, seqs[oid])})
                     r = post(body)
                     print(f'[{time.strftime("%H:%M:%S")}] {oid} seq={seqs[oid]} → {r.get("code")} '
                           f'{r.get("msg", "")[:40]}')

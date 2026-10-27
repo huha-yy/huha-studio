@@ -155,6 +155,8 @@ class Handler(BaseHTTPRequestHandler):
         self.wfile.flush()
 
     def do_POST(self):
+        if self.path.startswith('/internal/notice'):
+            return self.internal_notice()
         if self.path != '/chat':
             return self._json(404, {'code': 404, 'msg': 'not found', 'data': {}})
         n = int(self.headers.get('Content-Length', 0))
@@ -170,6 +172,30 @@ class Handler(BaseHTTPRequestHandler):
         if typ == 'send':
             return self.send(team, conv, req)
         return self._json(400, {'code': 400, 'msg': 'bad type', 'data': {}})
+
+    def internal_notice(self):
+        """watch 注入系统通知(审片报告等):追加完整轮次 + 通知 PixOffice 刷新聊天。"""
+        from urllib.parse import urlparse, parse_qs
+        q = parse_qs(urlparse(self.path).query)
+        team = (q.get('team') or ['studio-creative'])[0]
+        n = int(self.headers.get('Content-Length', 0))
+        body = json.loads(self.rfile.read(n))
+        conv = body['conversationId']
+        with lock_for(team, conv):
+            turns_of(team, conv).append({
+                'id': f'notice-{time.time()}', 'user': body.get('user', '(系统通知)'),
+                'assistant': body.get('assistant', ''), 'state': 'complete', 'error': '', 'ts': time.time()})
+            save(team, conv)
+        try:
+            key = os.environ.get('PIXOFFICE_API_KEY', 'pixoffice-demo-key')
+            rq = urllib.request.Request(
+                'http://127.0.0.1:8767/api/pixoffice/messages',
+                data=json.dumps({'type': 'chat.updated', 'teamId': team, 'conversationId': conv}).encode(),
+                headers={'Authorization': f'Bearer {key}', 'Content-Type': 'application/json'}, method='POST')
+            urllib.request.urlopen(rq, timeout=10)
+        except Exception as e:
+            print(f'[notice] chat.updated 失败: {e}', flush=True)
+        return self._json(200, {'code': 200, 'msg': 'OK', 'data': {'injected': True}})
 
     def history(self, team, conv, req):
         with lock_for(team, conv):
