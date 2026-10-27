@@ -110,10 +110,17 @@ def _progress(stages, names):
     return int(score)
 
 
+ALL_ROSTER = [('planner', '选题策划', 'data-agent'), ('screenwriter', '编剧', 'app-agent'),
+              ('designer', '设计师', 'file-agent'), ('videogen', '视频制作', 'code-agent'),
+              ('voice', '配音', 'data-agent'), ('editor', '剪辑', 'code-agent'),
+              ('reviewer', '质控', 'review-agent'), ('ops', '运营负责人', 'office-lead')]
+
+
 def build(oid, tasks, seq):
     spec = OFFICES[oid]
+    # 成员名单全编制:两办公室任一页面,6 个工位都看得到绑定成员
     employees = [{'id': a, 'name': n, 'role': n, 'sceneActorId': actor, 'online': True}
-                 for a, (n, actor) in spec['agents'].items()]
+                 for a, n, actor in ALL_ROSTER]
     deleted = set()
     df = ROOT / 'bridge' / 'deleted_convs.txt'
     if df.exists():
