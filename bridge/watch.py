@@ -146,6 +146,30 @@ def build(oid, tasks, seq):
                                'progress': -1, 'summary': '', 'updatedAt': t['mtime']})
         convs.append({'id': conv_id(tid), 'title': t['topic'][:38], 'whiteboard': board,
                       'employees': employees, 'tasks': tasks_list, 'events': []})
+    # 永久保留 main 总览会话:任何旧选中/默认会话永远合法
+    items = list(tasks.values())
+    finished = sum(1 for t in items if all(x['status'] == 'done' for x in t['stages'].values()))
+    active = len(items) - finished
+    latest = list(tasks.values())[-1] if items else None
+    overview_tasks = []
+    if latest:
+        for sid, sv in latest['stages'].items():
+            agent = STAGE_TO_AGENT.get(sid)
+            if not agent or OFFICE_OF.get(agent) != oid:
+                continue
+            overview_tasks.append({'id': f'main-{sid}', 'title': f'{spec["agents"][agent][0]}·{sid}',
+                                   'assigneeId': agent, 'status': TASK_STATUS.get(sv['status'], 'queued'),
+                                   'progress': -1, 'summary': '', 'updatedAt': latest['mtime']})
+    convs.insert(0, {'id': 'main', 'title': '团队总览', 'employees': employees,
+                     'tasks': overview_tasks, 'events': [],
+                     'whiteboard': {'template': 'task-board-v1', 'title': 'huaha-studio 内容工厂',
+                                    'status': 'running', 'tagline': f'今日 {len(items)} 条',
+                                    'description': '选题 → 剧本 → 视觉 → 视频 → 配音 → 合成 → 审核',
+                                    'steps': [
+                                        {'id': 'done', 'title': f'已完成 {finished} 条', 'progress': 100 if finished else 0},
+                                        {'id': 'doing', 'title': f'在制 {active} 条', 'progress': 50 if active else 100},
+                                        {'id': 'latest', 'title': f'最新:{(latest or {}).get("topic", "无")[:12]}',
+                                         'progress': _progress(latest['stages'], tuple(STAGE_TO_AGENT)) if latest else 0}]}})
     return {'schemaVersion': '1.0', 'seq': seq,
             'workspace': {'id': oid, 'name': spec['name']},
             'conversations': convs}
