@@ -136,6 +136,54 @@ def _lifecycle(stages):
     return 'aborted'
 
 
+class SystemMeter:
+    """从 /proc 采样 CPU/内存/网络,供快照 system 字段。"""
+
+    def __init__(self):
+        self._cpu = None      # (idle_sum, total_sum, ts)
+        self._net = None      # (rx_bytes, tx_bytes, ts)
+        self._last = {'cpuPercent': -1, 'memoryPercent': -1, 'networkKbps': -1}
+
+    def sample(self):
+        try:
+            parts = {}
+            for line in open('/proc/stat'):
+                if line.startswith('cpu '):
+                    v = [int(x) for x in line.split()[1:8]]
+                    parts['cpu'] = (sum(v), sum(v) - v[3] - v[4])   # total, busy
+                    break
+            mem = {}
+            for line in open('/proc/meminfo'):
+                k, v = line.split(':')[0], int(line.split()[1])
+                mem[k] = v
+            rx = tx = 0
+            for line in open('/proc/net/dev'):
+                if ':' in line and not line.strip().startswith(('lo', 'docker', 'br-', 'veth', 'virbr')):
+                    cols = line.split()
+                    rx += int(cols[1]); tx += int(cols[8])
+            import time as _t
+            now = _t.time()
+            out = dict(self._last)
+            if self._cpu and parts.get('cpu'):
+                dt_cpu = parts['cpu'][0] - self._cpu[0]
+                busy = parts['cpu'][1] - self._cpu[1]
+                if dt_cpu > 0:
+                    out['cpuPercent'] = round(min(100, busy * 100 / dt_cpu), 1)
+            if self._net:
+                dt = now - self._net[2]
+                if dt > 0:
+                    out['networkKbps'] = round((rx + tx - self._net[0] - self._net[1]) * 8 / 1000 / dt, 1)
+            if mem.get('MemTotal'):
+                used = mem['MemTotal'] - mem.get('MemAvailable', 0)
+                out['memoryPercent'] = round(used * 100 / mem['MemTotal'], 1)
+            self._cpu = (parts['cpu'][0], parts['cpu'][1], now) if parts.get('cpu') else self._cpu
+            self._net = (rx, tx, now)
+            self._last = out
+            return out
+        except Exception:
+            return {'cpuPercent': -1, 'memoryPercent': -1, 'networkKbps': -1}
+
+
 def conv_id(tid):
     """会话 id 须匹配 ^[a-zA-Z0-9_.:-]+$:取任务号前缀(日期-序号),唯一且合法。"""
     parts = tid.split('-')
@@ -157,7 +205,7 @@ ALL_ROSTER = [('planner', '选题策划', 'data-agent'), ('screenwriter', '编�
               ('reviewer', '质控', 'review-agent'), ('ops', '运营负责人', 'office-lead')]
 
 
-def build(oid, tasks, seq, all_tasks=None):
+def build(oid, tasks, seq, all_tasks=None, meter=None):
     spec = OFFICES[oid]
     all_tasks = all_tasks or tasks
     # 成员名单全编制 + 岗位统计
@@ -223,6 +271,9 @@ def build(oid, tasks, seq, all_tasks=None):
                                         {'id': 'doing', 'title': f'在制 {active} 条', 'progress': 50 if active else 100},
                                         {'id': 'latest', 'title': f'最新:{(latest or {}).get("topic", "无")[:12]}',
                                          'progress': _progress(latest['stages'], tuple(STAGE_TO_AGENT)) if latest else 0}]}})
+    system = meter.sample() if meter else None
+    for c in convs:                      # system 属于会话级(dashboard schema)
+        c['system'] = system
     return {'schemaVersion': '1.0', 'seq': seq,
             'workspace': {'id': oid, 'name': spec['name']},
             'conversations': convs}
@@ -261,6 +312,7 @@ def main():
     ap.add_argument('--dry', action='store_true', help='只打印不推送')
     args = ap.parse_args()
     last_hash, seqs, last_stages = None, {}, {}
+    meter = SystemMeter()
     # 续接服务端已有 seq,避免重启后同 seq 不同快照被拒(409)
     try:
         directory = post({'type': 'office.read'})
@@ -297,10 +349,10 @@ def main():
                         print(f'[dry] {oid} seq={seqs[oid]} 会话{len(tasks)}')
                         continue
                     first = seqs[oid] == 1
-                    body = ({'type': 'offices.initialize', 'offices': [build(oid, recent, seqs[oid], tasks)],
+                    body = ({'type': 'offices.initialize', 'offices': [build(oid, recent, seqs[oid], tasks, meter)],
                              'chat': {'url': f'{CHAT_SERVER}/chat'}}
                             if first else
-                            {'type': 'office.snapshot', 'teamId': oid, 'snapshot': build(oid, recent, seqs[oid], tasks)})
+                            {'type': 'office.snapshot', 'teamId': oid, 'snapshot': build(oid, recent, seqs[oid], tasks, meter)})
                     r = post(body)
                     print(f'[{time.strftime("%H:%M:%S")}] {oid} seq={seqs[oid]} → {r.get("code")} '
                           f'{r.get("msg", "")[:40]}')
