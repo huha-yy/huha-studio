@@ -205,7 +205,7 @@ ALL_ROSTER = [('planner', '选题策划', 'data-agent'), ('screenwriter', '编�
               ('reviewer', '质控', 'review-agent'), ('ops', '运营负责人', 'office-lead')]
 
 
-def build(oid, tasks, seq, all_tasks=None, meter=None):
+def build(oid, tasks, seq, all_tasks=None, sysd=None):
     spec = OFFICES[oid]
     all_tasks = all_tasks or tasks
     # 成员名单全编制 + 岗位统计
@@ -271,7 +271,7 @@ def build(oid, tasks, seq, all_tasks=None, meter=None):
                                         {'id': 'doing', 'title': f'在制 {active} 条', 'progress': 50 if active else 100},
                                         {'id': 'latest', 'title': f'最新:{(latest or {}).get("topic", "无")[:12]}',
                                          'progress': _progress(latest['stages'], tuple(STAGE_TO_AGENT)) if latest else 0}]}})
-    system = meter.sample() if meter else {'cpuPercent': -1, 'memoryPercent': -1, 'networkKbps': -1}
+    system = sysd or {'cpuPercent': -1, 'memoryPercent': -1, 'networkKbps': -1}
     return {'schemaVersion': '1.0', 'seq': seq,
             'workspace': {'id': oid, 'name': spec['name']},
             'system': system,
@@ -326,8 +326,14 @@ def main():
         try:
             tasks, tasks_state = collect()
             recent = dict(list(tasks.items())[-5:])
-            h = json.dumps({k: {'topic': v['topic'], 'stages': v['stages'], 'final': v['final']}
-                            for k, v in tasks.items()}, sort_keys=True, ensure_ascii=False).__hash__()
+            sysd = meter.sample()
+            # 资源分桶进变化检测:读数明显变化时自动推新快照(避免空闲时资源面板停滞)
+            bucket = (round(max(0, sysd['cpuPercent']) / 5) * 5,
+                      round(sysd['memoryPercent']),
+                      round(max(0, sysd['networkKbps']) / 100) * 100)
+            h = json.dumps({'tasks': {k: {'topic': v['topic'], 'stages': v['stages'], 'final': v['final']}
+                                      for k, v in tasks.items()},
+                            'sys': bucket}, sort_keys=True, ensure_ascii=False).__hash__()
             for tid, stages in tasks_state.items():
                 for sid, s in stages.items():
                     key = (tid, sid, s['status'])
@@ -348,10 +354,10 @@ def main():
                         print(f'[dry] {oid} seq={seqs[oid]} 会话{len(tasks)}')
                         continue
                     first = seqs[oid] == 1
-                    body = ({'type': 'offices.initialize', 'offices': [build(oid, recent, seqs[oid], tasks, meter)],
+                    body = ({'type': 'offices.initialize', 'offices': [build(oid, recent, seqs[oid], tasks, sysd)],
                              'chat': {'url': f'{CHAT_SERVER}/chat'}}
                             if first else
-                            {'type': 'office.snapshot', 'teamId': oid, 'snapshot': build(oid, recent, seqs[oid], tasks, meter)})
+                            {'type': 'office.snapshot', 'teamId': oid, 'snapshot': build(oid, recent, seqs[oid], tasks, sysd)})
                     r = post(body)
                     print(f'[{time.strftime("%H:%M:%S")}] {oid} seq={seqs[oid]} → {r.get("code")} '
                           f'{r.get("msg", "")[:40]}')
