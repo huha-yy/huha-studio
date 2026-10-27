@@ -13,6 +13,7 @@ stages:
     agent: designer
     input: [02-script/storyboard.json]
     output: [cover.png]
+    timeout: 3600
   - id: video
     agent: videogen
     input: [02-script/storyboard.json, 03-design/]
