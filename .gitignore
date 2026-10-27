@@ -7,3 +7,4 @@ output/
 .env
 references/
 runs/
+bridge/chat_history/
