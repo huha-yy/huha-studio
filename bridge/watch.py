@@ -93,7 +93,7 @@ def collect():
                 'assigneeId': 'planner' if oid == 'studio-creative' else 'voice',
                 'status': 'running' if done < total else 'completed',
                 'progress': int(done * 100 / total), 'summary': f"{done}/{total} 阶段完成",
-                'updatedAt': time.strftime('%Y-%m-%dT%H:%M:%S.000Z')})
+                'updatedAt': _stable_time(d / 'state.json')})
             for sid, s in st['stages'].items():
                 agent = STAGE_TO_AGENT.get(sid)
                 if not agent or OFFICE_OF.get(agent) != oid:
@@ -101,8 +101,15 @@ def collect():
                 snap['tasks'].append({
                     'id': f"{st['task_id']}-{sid}", 'title': sid, 'assigneeId': agent,
                     'status': TASK_STATUS.get(s['status'], 'queued'), 'progress': -1,
-                    'summary': '', 'updatedAt': time.strftime('%Y-%m-%dT%H:%M:%S.000Z')})
+                    'summary': '', 'updatedAt': _stable_time(d / 'state.json')})
     return snapshots, tasks_state
+
+
+def _stable_time(f):
+    """state.json 的 mtime——状态不变则时间戳不变(避免空转烧 seq)。"""
+    import datetime
+    t = f.stat().st_mtime
+    return datetime.datetime.fromtimestamp(t).strftime('%Y-%m-%dT%H:%M:%S.000Z')
 
 
 def build(oid, snap, seq):

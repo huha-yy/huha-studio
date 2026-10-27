@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="zh-CN" data-composition-variables='[
+  {"id":"stepNum","type":"string","label":"步骤号","default":"STEP 01"},
+  {"id":"stepTitle","type":"string","label":"步骤名","default":"修 复"},
+  {"id":"accent","type":"color","label":"强调色","default":"#c2492b"},
+  {"id":"paper","type":"color","label":"纸底","default":"#f5f2ea"},
+  {"id":"ink","type":"string","type_note":"text","default":"#2e2620","label":"墨色"},
+  {"id":"caption","type":"string","label":"底注","default":"模糊的旧照，一秒变清晰"},
+  {"id":"endHold","type":"number","label":"结尾停留","default":1.4,"min":0,"max":5,"step":0.1,"group":"节奏"}
+]'>
+<head>
+<meta charset="utf-8">
+<title>S2 · STEP 1 修复</title>
+<script src="vendor/gsap.min.js"></script>
+<style id="om-fonts">
+@font-face { font-family: "Noto Sans SC"; src: url("assets/fonts/NotoSansSC-500.woff") format("woff"); font-weight: 500; font-style: normal; }
+@font-face { font-family: "Noto Sans SC"; src: url("assets/fonts/NotoSansSC-900.woff") format("woff"); font-weight: 900; font-style: normal; }
+</style>
+<style>
+  html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; }
+  #film { position: relative; width: 100%; height: 100%; overflow: hidden; background: var(--paper); color: #2e2620; font-family: "Noto Sans SC", sans-serif; font-weight: 500; }
+  .paper-tex { position: absolute; inset: 0; background:
+      radial-gradient(1000px 600px at 15% 8%, #ffffff90, transparent 60%),
+      radial-gradient(800px 500px at 95% 96%, #00000008, transparent 60%); }
+
+  /* STEP 头部：左侧色条 + 编号 + 大字 */
+  .step { position: absolute; left: 90px; top: 170px; display: flex; align-items: center; gap: 34px; }
+  .step .bar { width: 18px; height: 150px; background: var(--accent); }
+  .step .col { display: flex; flex-direction: column; gap: 10px; }
+  .step .num { font-size: 34px; letter-spacing: 12px; color: var(--accent); font-weight: 500; }
+  .step .name { font-size: 96px; font-weight: 900; letter-spacing: 14px; line-height: 1; }
+
+  /* 装裱照片卡：唯一亮源 */
+  .card { position: absolute; left: 120px; top: 430px; width: 840px; height: 1000px;
+      background: #fdf3dc; border-radius: 14px;
+      box-shadow: 0 6px 40px #38281f26, 0 2px 0 #cbb39255 inset; padding: 26px; }
+  .photo { position: relative; width: 788px; height: 948px; overflow: hidden; background: #8d8578; }
+  .figs { position: absolute; inset: 0; }
+
+  /* 受损层：灰 + 划痕 + 模糊 */
+  .damaged { position: absolute; inset: 0; filter: grayscale(1) brightness(.92) blur(3px); }
+  .scratches { position: absolute; inset: 0; opacity: .8; background:
+      linear-gradient(76deg, transparent 46.6%, #fdf3dcb0 47%, transparent 47.6%),
+      linear-gradient(63deg, transparent 70.2%, #fdf3dc80 70.5%, transparent 71%),
+      linear-gradient(84deg, transparent 24.1%, #fdf3dc60 24.4%, transparent 24.9%),
+      radial-gradient(300px 200px at 80% 15%, #ffffff30, transparent 70%),
+      radial-gradient(260px 260px at 12% 85%, #24181130, transparent 70%); }
+  .stain { position: absolute; inset: 0; background: radial-gradient(420px 300px at 88% 88%, #6b5a3f50, transparent 70%); }
+
+  /* 修复层：暖色清晰 */
+  .restored { position: absolute; inset: 0; clip-path: inset(100% 0 0 0); }
+
+  .tag { position: absolute; right: 20px; top: 34px; background: #38281f; color: #f5f2ea; font-size: 30px; letter-spacing: 6px; padding: 12px 26px; border-radius: 8px; }
+  .tag.ok { background: #9d3a20; top: auto; bottom: 40px; }
+
+  /* 滑杆 */
+  .sliders { position: absolute; left: 120px; top: 1490px; width: 840px; display: flex; flex-direction: column; gap: 34px; }
+  .slider { display: flex; align-items: center; gap: 30px; font-size: 40px; }
+  .slider .lbl { width: 190px; letter-spacing: 8px; }
+  .slider .lbl b { color: var(--accent); font-weight: 500; }
+  .track { position: relative; flex: 1; height: 14px; border-radius: 7px; background: #d8cbb8; overflow: hidden; }
+  .fill { position: absolute; inset: 0; transform-origin: 0 50%; transform: scaleX(0); background: var(--accent); }
+  .slider.s2 .fill { background: #2b6ea0; }
+  .val { width: 150px; text-align: right; font-variant-numeric: tabular-nums; color: #4d443a; font-size: 36px; }
+
+  .caption { position: absolute; left: 0; right: 0; bottom: 170px; text-align: center; font-size: 52px; letter-spacing: 8px; opacity: 0; }
+  .caption b { color: var(--accent); font-weight: 500; }
+</style>
+</head>
+<body>
+<div id="film" data-composition-id="film" data-width="1080" data-height="1920" data-duration="7">
+  <div class="paper-tex"></div>
+
+  <div class="step" data-om-id="step">
+    <div class="bar" data-om-id="step-bar"></div>
+    <div class="col">
+      <div class="num" data-om-id="step-num" data-var-text="stepNum">STEP 01</div>
+      <div class="name" data-om-id="step-name" data-var-text="stepTitle">修 复</div>
+    </div>
+  </div>
+
+  <div class="card" data-om-id="photo-card">
+    <div class="photo" data-om-id="photo">
+      <!-- 受损层 -->
+      <div class="damaged" data-om-id="damaged">
+        <svg class="figs" viewBox="0 0 788 948" width="788" height="948">
+          <rect width="788" height="948" fill="#9a9287"/>
+          <ellipse cx="394" cy="880" rx="360" ry="60" fill="#7c756b"/>
+          <g fill="#5c564e" transform="translate(0,-110)">
+            <circle cx="240" cy="300" r="52"/><path d="M240 360 C170 360 150 470 150 600 L150 880 L330 880 L330 600 C330 470 310 360 240 360 Z"/>
+            <circle cx="548" cy="330" r="46"/><path d="M548 386 C490 386 470 480 470 600 L470 880 L626 880 L626 600 C626 480 606 386 548 386 Z"/>
+          </g>
+          <g fill="#4a453e" transform="translate(0,-70)">
+            <circle cx="394" cy="500" r="60"/><path d="M394 572 C310 572 290 690 292 880 L496 880 C498 690 478 572 394 572 Z"/>
+          </g>
+        </svg>
+        <div class="stain"></div>
+        <div class="scratches" data-om-id="scratches"></div>
+      </div>
+      <!-- 修复层 -->
+      <div class="restored" data-om-id="restored">
+        <svg class="figs" viewBox="0 0 788 948" width="788" height="948">
+          <defs>
+            <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#e8d5b5"/><stop offset="1" stop-color="#cbb392"/>
+            </linearGradient>
+          </defs>
+          <rect width="788" height="948" fill="url(#bg)"/>
+          <ellipse cx="394" cy="880" rx="360" ry="60" fill="#b39a74"/>
+          <g fill="#6e5a48" transform="translate(0,-110)">
+            <circle cx="240" cy="300" r="52"/><path d="M240 360 C170 360 150 470 150 600 L150 880 L330 880 L330 600 C330 470 310 360 240 360 Z"/>
+            <circle cx="548" cy="330" r="46"/><path d="M548 386 C490 386 470 480 470 600 L470 880 L626 880 L626 600 C626 480 606 386 548 386 Z"/>
+          </g>
+          <g fill="#8a6a52" transform="translate(0,-70)">
+            <circle cx="394" cy="500" r="60"/><path d="M394 572 C310 572 290 690 292 880 L496 880 C498 690 478 572 394 572 Z"/>
+          </g>
+          <ellipse cx="394" cy="180" rx="200" ry="120" fill="#fdf3dc40"/>
+        </svg>
+      </div>
+      <div class="tag" data-om-id="tag-old">旧 照</div>
+      <div class="tag ok" data-om-id="tag-new" style="opacity:0">修 复 后</div>
+    </div>
+  </div>
+
+  <div class="sliders" data-om-id="sliders">
+    <div class="slider s1"><span class="lbl">上<b>色</b></span><span class="track"><span class="fill" data-om-id="fill-color"></span></span><span class="val" id="val-color">0%</span></div>
+    <div class="slider s2"><span class="lbl">清晰度</span><span class="track"><span class="fill" data-om-id="fill-clarity"></span></span><span class="val" id="val-clarity">0%</span></div>
+  </div>
+
+  <div class="caption" data-om-id="caption" data-om-var="caption">模糊的旧照，一秒变清晰</div>
+</div>
+
+<script>
+  const V = OM.vars();
+  const tl = gsap.timeline({ paused: true, defaults: { ease: 'power3.out' } });
+
+  const setColor = document.getElementById('val-color');
+  const setClarity = document.getElementById('val-clarity');
+  const pc = { v: 0 }, pk = { v: 0 };
+
+  tl.addLabel('scene:enter', 0)
+    .fromTo('.card', { opacity: 0, y: 60 }, { opacity: 1, y: 0, duration: .7, ease: 'expo.out' }, .1)
+    .fromTo('.step .bar', { scaleY: 0 }, { scaleY: 1, duration: .5, transformOrigin: '50% 0' }, .2)
+    .fromTo('.step .num', { opacity: 0, x: -24 }, { opacity: 1, x: 0, duration: .5 }, .3)
+    .fromTo('.step .name', { opacity: 0, x: -36 }, { opacity: 1, x: 0, duration: .6 }, .4)
+    .fromTo('.tag', { opacity: 0, x: 24 }, { opacity: 1, x: 0, duration: .5 }, .55);
+
+  tl.addLabel('scene:restore', 1.2)
+    .fromTo('.sliders', { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: .5 }, 1.2)
+    // 滑杆推动
+    .fromTo(pc, { v: 0 }, { v: 100, duration: 1.6, ease: 'power2.inOut',
+        onUpdate: () => { setColor.textContent = Math.round(pc.v) + '%'; } }, 1.4)
+    .fromTo('.slider.s1 .fill', { scaleX: 0 }, { scaleX: 1, duration: 1.6, ease: 'power2.inOut' }, 1.4)
+    .fromTo(pk, { v: 0 }, { v: 96, duration: 1.3, ease: 'power2.inOut',
+        onUpdate: () => { setClarity.textContent = Math.round(pk.v) + '%'; } }, 1.7)
+    .fromTo('.slider.s2 .fill', { scaleX: 0 }, { scaleX: .96, duration: 1.3, ease: 'power2.inOut' }, 1.7)
+    // 颜色自上而下渗入
+    .to('.restored', { clipPath: 'inset(0% 0 0 0)', duration: 1.9, ease: 'power2.inOut' }, 1.5)
+    // 清晰度同步去掉模糊、划痕褪去
+    .to('.damaged', { filter: 'grayscale(0) brightness(1) blur(0px)', duration: 1.9, ease: 'power2.inOut' }, 1.5)
+    .to('.scratches', { opacity: 0, duration: 1.4 }, 1.8)
+    .to('.tag', { opacity: 0, duration: .35, ease: 'power2.in' }, 1.9)
+    .fromTo('.tag.ok', { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: .5 }, 3.1);
+
+  tl.addLabel('scene:hold', 4.2)
+    .fromTo('.caption', { opacity: 0, y: 26 }, { opacity: 1, y: 0, duration: .8 }, 4.3)
+    // 结尾缓推 + 照片微呼吸,避免长静止
+    .fromTo('.card', { scale: 1 }, { scale: 1.045, duration: 2.8, ease: 'power1.inOut', transformOrigin: '50% 45%' }, 4.1)
+    .fromTo('.caption', { y: 0 }, { y: -8, duration: 2.4, ease: 'power1.inOut' }, 4.6)
+    .fromTo('.tag.ok', { scale: 1 }, { scale: 1.04, duration: 1.2, yoyo: true, repeat: 1, ease: 'sine.inOut', transformOrigin: '50% 50%' }, 5.0)
+    .to({}, { duration: V.endHold });
+
+  window.__timelines['film'] = tl;
+</script>
+</body>
+</html>

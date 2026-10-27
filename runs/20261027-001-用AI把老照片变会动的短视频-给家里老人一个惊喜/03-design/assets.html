@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:#111; }
+  .frame { width:1080px; height:1920px; position:relative; overflow:hidden; margin:0 auto 40px; }
+  .lbl { position:absolute; top:40px; left:40px; z-index:9; font-family:"Noto Sans CJK SC",sans-serif;
+    font-size:30px; color:#ffd; background:rgba(0,0,0,.45); padding:10px 22px; border-radius:8px; letter-spacing:4px; }
+
+  /* S1:1960s B&W family portrait, full-bleed, vintage grain, vignette */
+  .s1 { background:
+    radial-gradient(ellipse at 50% 38%, #e8e4da 0%, #c9c4b6 30%, #8f897a 62%, #55503f 85%, #2e2a20 100%); }
+  .s1 .grain { position:absolute; inset:0; opacity:.5; background-image:
+    repeating-linear-gradient(0deg, rgba(60,55,45,.06) 0 1px, transparent 1px 3px),
+    repeating-linear-gradient(90deg, rgba(60,55,45,.05) 0 1px, transparent 1px 4px); }
+  .s1 .vig { position:absolute; inset:0; background:radial-gradient(ellipse at 50% 40%, transparent 55%, rgba(30,26,18,.55) 100%); }
+  .s1 .floor { position:absolute; bottom:0; left:0; right:0; height:520px;
+    background:linear-gradient(180deg, #a09a89 0%, #77705e 45%, #4a4536 100%); }
+  .s1 .floor::before { content:""; position:absolute; top:0; left:0; right:0; height:6px; background:rgba(40,36,28,.35); filter:blur(3px); }
+  .s1 .person { position:absolute; bottom:280px; border-radius:50% 50% 12px 12px; filter:blur(.5px); }
+  .s1 .p1 { left:170px; width:300px; height:760px; background:linear-gradient(180deg,#d9d3c4,#9d968338); background-color:#8f897a; }
+  .s1 .p1::before { content:""; position:absolute; top:-120px; left:70px; width:160px; height:190px; border-radius:80px 80px 20px 20px; background:#c4bdae; }
+  .s1 .p2 { left:490px; width:320px; height:820px; background-color:#6e6857; bottom:260px; }
+  .s1 .p2::before { content:""; position:absolute; top:-130px; left:75px; width:170px; height:200px; border-radius:85px 85px 22px 22px; background:#b3ac9c; }
+  .s1 .p3 { right:150px; width:290px; height:700px; background-color:#7d7765; bottom:290px; }
+  .s1 .p3::before { content:""; position:absolute; top:-110px; left:65px; width:155px; height:185px; border-radius:78px 78px 20px 20px; background:#bdb6a5; }
+  .s1 .caption { position:absolute; bottom:120px; left:0; right:0; text-align:center;
+    font-family:"Noto Serif CJK SC",serif; font-size:52px; color:#f5efe0; letter-spacing:12px;
+    text-shadow:0 2px 14px rgba(0,0,0,.6); }
+
+  /* S5: over-shoulder, phone glowing in dim living room */
+  .s5 { background:radial-gradient(circle at 52% 40%, #efc98d 0%, #c99a62 16%, #5c4634 50%, #31221a 80%, #20150f 100%); }
+  .s5 .bokeh { position:absolute; border-radius:50%; background:rgba(255,214,150,.28); filter:blur(16px); }
+  .s5 .lamp { position:absolute; top:150px; right:120px; width:200px; height:120px;
+    background:radial-gradient(ellipse, rgba(255,236,190,.55), transparent 70%); filter:blur(10px); }
+  .s5 .phone { position:absolute; top:620px; left:390px; width:300px; height:520px; background:#fdf3dc; border-radius:24px;
+    box-shadow:0 0 90px 40px rgba(253,233,186,.6), 0 0 240px 110px rgba(253,233,186,.3); transform:rotate(-11deg); }
+  .s5 .phone .pic { position:absolute; top:50px; left:36px; width:228px; height:290px; background:#fffdf4; box-shadow:0 3px 10px rgba(120,90,40,.3); }
+  .s5 .phone .pic .fig { position:absolute; top:36px; left:74px; width:80px; height:100px; border-radius:40px 40px 10px 10px;
+    background:linear-gradient(180deg,#cbb392,#a98c5f); filter:blur(1px); }
+  .s5 .phone .bar { position:absolute; bottom:60px; left:36px; width:228px; height:8px; background:#d9cba8; border-radius:4px; }
+  .s5 .phone .bar i { display:block; width:62%; height:100%; background:#c2492b; border-radius:4px; }
+  .s5 .arm { position:absolute; bottom:120px; left:40px; width:640px; height:150px; background:#1a120d; border-radius:76px; transform:rotate(-10deg); }
+  .s5 .hand { position:absolute; top:1075px; left:575px; width:200px; height:150px; background:#241812; border-radius:34px; transform:rotate(-11deg); }
+  .s5 .hand::before { content:""; position:absolute; left:-64px; top:52px; width:130px; height:44px; background:#241812; border-radius:22px; }
+  .s5 .shoulder { position:absolute; bottom:-360px; left:-320px; width:1400px; height:900px; background:#150f0b; border-radius:0 500px 0 0; filter:blur(3px);
+    box-shadow:inset 0 20px 90px rgba(253,226,170,.16); }
+
+  /* S6: grandmother by window, soft daylight, documentary */
+  .s6 { background:linear-gradient(160deg, #f2e6d2 0%, #d9c5a6 40%, #a08a6c 75%, #6e5c46 100%); }
+  .s6 .window { position:absolute; top:170px; left:520px; width:420px; height:640px; background:
+    linear-gradient(155deg, rgba(255,250,235,.95), rgba(240,224,192,.75));
+    border:26px solid #4a3d2e; border-radius:8px; box-shadow:0 0 120px 50px rgba(255,244,214,.5); }
+  .s6 .window::before, .s6 .window::after { content:""; position:absolute; background:#4a3d2e; }
+  .s6 .window::before { left:50%; top:0; bottom:0; width:18px; margin-left:-9px; }
+  .s6 .window::after { top:50%; left:0; right:0; height:18px; margin-top:-9px; }
+  .s6 .glow { position:absolute; top:150px; left:420px; width:620px; height:900px;
+    background:radial-gradient(ellipse at 60% 35%, rgba(255,246,220,.75), transparent 65%); filter:blur(24px); }
+  .s6 .gm { position:absolute; bottom:0; left:140px; width:560px; }
+  .s6 .gm .head { width:230px; height:260px; background:linear-gradient(200deg,#5e4c39 0%,#392c20 60%); border-radius:115px 115px 26px 26px; margin-left:120px; position:relative; }
+  .s6 .gm .head::before { content:""; position:absolute; inset:-14px; border-radius:125px 125px 30px 30px; background:rgba(255,242,212,.5); z-index:-1; transform:translate(20px,12px); filter:blur(6px); }
+  .s6 .gm .bun { position:absolute; top:-52px; left:180px; width:92px; height:92px; background:#392c20; border-radius:50%; }
+  .s6 .gm .torso { width:560px; height:520px; background:linear-gradient(195deg,#54432f 0%,#2c2118 70%); border-radius:160px 160px 0 0; margin-top:-20px; }
+  .s6 .phonehand { position:absolute; bottom:430px; left:490px; width:160px; height:120px; background:#33271c; border-radius:28px; transform:rotate(-8deg);
+    box-shadow:0 0 50px 16px rgba(255,246,216,.45); }
+  .s6 .phonehand::before { content:""; position:absolute; top:-130px; left:32px; width:96px; height:156px; background:#fbf3da; border-radius:12px; transform:rotate(8deg);
+    box-shadow:0 0 44px 14px rgba(255,246,216,.55); }
+  .s6 .phonearm { position:absolute; bottom:330px; left:230px; width:380px; height:96px; background:#33271c; border-radius:50px; transform:rotate(-24deg); }
+  .s6 .grain { position:absolute; inset:0; opacity:.35; background-image:
+    repeating-linear-gradient(0deg, rgba(70,58,42,.05) 0 1px, transparent 1px 3px),
+    repeating-linear-gradient(90deg, rgba(70,58,42,.04) 0 1px, transparent 1px 4px); }
+</style>
+</head>
+<body>
+  <div class="frame s1" id="S1">
+    <div class="lbl">S1 首帧参考 · 黑白全家福(全幅)</div>
+    <div class="floor"></div>
+    <div class="person p1"></div>
+    <div class="person p2"></div>
+    <div class="person p3"></div>
+    <div class="grain"></div>
+    <div class="vig"></div>
+    <div class="caption">她朝我眨眼了</div>
+  </div>
+
+  <div class="frame s5" id="S5">
+    <div class="lbl">S5 首帧参考 · 过肩看手机(暖客厅)</div>
+    <div class="lamp"></div>
+    <div class="bokeh" style="width:150px;height:150px;left:140px;top:260px;"></div>
+    <div class="bokeh" style="width:90px;height:90px;left:820px;top:900px;"></div>
+    <div class="phone"><div class="pic"><div class="fig"></div></div><div class="bar"><i></i></div></div>
+    <div class="arm"></div>
+    <div class="hand"></div>
+    <div class="shoulder"></div>
+  </div>
+
+  <div class="frame s6" id="S6">
+    <div class="lbl">S6 首帧参考 · 奶奶看手机(窗光纪实)</div>
+    <div class="glow"></div>
+    <div class="window"></div>
+    <div class="gm"><div class="head"><div class="bun"></div></div><div class="torso"></div></div>
+    <div class="phonearm"></div>
+    <div class="phonehand"></div>
+    <div class="grain"></div>
+  </div>
+</body>
+</html>

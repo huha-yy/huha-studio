@@ -8,10 +8,11 @@
 2. 写 **`storyboard.json`**(分镜表),每个镜头:
    ```json
    { "shots": [
-     { "id": "S1", "t": [0, 3], "narration": "口播文案", "visual": "画面描述(给生图/生视频 agent 的英文 prompt 更佳)", "motion": "运镜/动效说明", "kind": "gen-image|gen-video|motion-code" },
+     { "id": "S1", "t": [0, 3], "narration": "口播文案", "visual": "代码动效画面描述:版式结构/图形元素/文字层级/转场方式/节奏", "motion": "动效细节(缓动/强调/循环)", "kind": "motion-code" },
    ]}
    ```
-   - `kind` 决定下游怎么做:`gen-image` 生静态图、`gen-video` 生视频、`motion-code` 用代码动效技能直出
+   - `kind` 一律 `motion-code`(纯代码动效渲染,本团队不用生成式图/视频模型)
+   - visual 描述面向**排版与图形语言**(大字报/图表/图形转场/数据可视化/风格化场景),不是照片描述,不写生图 prompt
 3. 分镜总量 5-9 个镜头;口播总时长与分镜总时长一致
 
 ## 纪律

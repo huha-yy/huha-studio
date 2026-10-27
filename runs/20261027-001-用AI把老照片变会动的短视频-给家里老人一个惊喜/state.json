@@ -1,0 +1,53 @@
+{
+ "task_id": "20261027-001-用AI把老照片变会动的短视频-给家里老人一个惊喜",
+ "pipeline": "short-video",
+ "topic": "用AI把老照片变会动的短视频,给家里老人一个惊喜",
+ "created_at": "2026-10-27T09:31:52",
+ "stages": {
+  "brief": {
+   "status": "done",
+   "attempts": 1,
+   "start": "09:31:52",
+   "end": "09:33:43",
+   "cost_usd": 0.049947000000000005,
+   "duration": 32.3
+  },
+  "script": {
+   "status": "done",
+   "attempts": 1,
+   "start": "09:33:43",
+   "end": "09:34:44",
+   "cost_usd": 0.08748059999999999,
+   "duration": 61.6
+  },
+  "design": {
+   "status": "done",
+   "attempts": 2,
+   "start": "10:50:30",
+   "end": "11:03:54",
+   "error": "超时(1800s)",
+   "cost_usd": 0.7831847999999999,
+   "duration": 803.7
+  },
+  "video": {
+   "status": "running",
+   "attempts": 3,
+   "start": "15:12:24",
+   "end": "15:11:07",
+   "error": "超时(3600s)"
+  },
+  "voice": {
+   "status": "pending",
+   "attempts": 0
+  },
+  "edit": {
+   "status": "pending",
+   "attempts": 0
+  },
+  "review": {
+   "status": "pending",
+   "attempts": 0
+  }
+ },
+ "auto": true
+}

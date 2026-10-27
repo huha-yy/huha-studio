@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html,body { width:1080px; height:1920px; overflow:hidden; }
+  body { font-family:"Noto Serif CJK SC",serif; background:#fdfcf7; position:relative; padding:130px 90px; }
+  .kicker { display:inline-block; border:2.5px solid #30486a; color:#30486a; font-family:"Noto Sans CJK SC",sans-serif; font-weight:700; font-size:30px; letter-spacing:8px; padding:14px 26px; }
+  h1 { margin-top:70px; font-size:150px; font-weight:900; color:#16181d; letter-spacing:8px; line-height:1.35; }
+  h1 em { font-style:normal; color:#c4422b; }
+  .steps { margin-top:110px; display:flex; flex-direction:column; gap:44px; }
+  .step { border:3px solid #16181d; background:#fff; padding:44px 48px; display:flex; align-items:center; gap:44px; }
+  .step .num { font-family:"Noto Sans CJK SC",sans-serif; font-weight:900; font-size:64px; width:120px; flex:none; }
+  .step .st { font-size:58px; font-weight:900; color:#16181d; letter-spacing:6px; }
+  .step .sd { margin-top:14px; font-family:"Noto Sans CJK SC",sans-serif; font-size:32px; color:#6d6a60; letter-spacing:2px; }
+  .s1 .num { color:#c4422b; } .s1 { border-left:14px solid #c4422b; }
+  .s2 .num { color:#30486a; } .s2 { border-left:14px solid #30486a; }
+  .s3 .num { color:#b07d10; } .s3 { border-left:14px solid #b07d10; }
+  .quote { margin-top:96px; font-family:"AR PL UKai CN"; font-size:46px; color:#c4422b; letter-spacing:6px; }
+  .foot { position:absolute; left:90px; right:90px; bottom:120px; display:flex; justify-content:space-between; align-items:baseline; }
+  .foot .promise { font-size:38px; font-weight:700; color:#16181d; letter-spacing:4px; }
+  .foot .meta { font-family:"Noto Sans CJK SC",sans-serif; font-size:28px; color:#a9a599; letter-spacing:6px; }
+  /* 标题右侧:修复前后对比小样(拍立得) */
+  .polaroid { position:absolute; top:150px; right:64px; width:300px; background:#fff; padding:14px 14px 46px; box-shadow:0 14px 34px rgba(40,35,20,.22); transform:rotate(5deg); }
+  .polaroid .tape { position:absolute; top:-16px; left:50%; transform:translateX(-50%) rotate(-3deg); width:110px; height:32px; background:rgba(214,196,150,.65); }
+  .polaroid .shot { position:relative; height:320px; overflow:hidden; background:#8d8676; }
+  .polaroid .old { position:absolute; inset:0; background:radial-gradient(ellipse at 50% 34%,#b5ac97 0%,#7c7666 60%,#57523f 100%); }
+  .polaroid .old .fig { position:absolute; left:50%; top:26%; transform:translateX(-50%); width:110px; height:140px; border-radius:55px 55px 14px 14px; background:#4f4a3c; filter:blur(3px); }
+  .polaroid .old::after { content:""; position:absolute; inset:0; background:repeating-linear-gradient(0deg,rgba(60,55,40,.14) 0 2px,transparent 2px 5px); }
+  .polaroid .new { position:absolute; inset:0; clip-path:polygon(58% 0, 100% 0, 100% 100%, 34% 100%); background:radial-gradient(ellipse at 50% 34%,#e8c39a 0%,#c98f5f 58%,#8a5c3c 100%); }
+  .polaroid .new .fig { position:absolute; left:50%; top:26%; transform:translateX(-50%); width:110px; height:140px; border-radius:55px 55px 14px 14px; background:#5d4030; }
+  .polaroid .caption { position:absolute; bottom:12px; left:0; right:0; text-align:center; font-family:"AR PL UKai CN"; font-size:24px; color:#6b6355; letter-spacing:3px; }
+</style>
+</head>
+<body>
+  <div class="kicker">AI 实操 · 45 秒学会</div>
+  <h1>老照片<br><em>复活</em>三步</h1>
+  <div class="steps">
+    <div class="step s1"><div class="num">01</div><div><div class="st">修复</div><div class="sd">上色 · 磨皮 · 补细节,模糊一秒变清晰</div></div></div>
+    <div class="step s2"><div class="num">02</div><div><div class="st">图生视频</div><div class="sd">微动作最出效果,大幅动作容易穿帮</div></div></div>
+    <div class="step s3"><div class="num">03</div><div><div class="st">合成</div><div class="sd">年代感环境音 + 一段轻音乐</div></div></div>
+  </div>
+  <div class="quote">"轻微眨眼,嘴角上扬"</div>
+  <div class="polaroid">
+    <div class="tape"></div>
+    <div class="shot"><div class="old"><div class="fig"></div></div><div class="new"><div class="fig"></div></div></div>
+    <div class="caption">修复前 · 修复后</div>
+  </div>
+  <div class="foot">
+    <div class="promise">做完这条,给家里打个电话</div>
+    <div class="meta">亲情向 · 记得转发</div>
+  </div>
+</body>
+</html>

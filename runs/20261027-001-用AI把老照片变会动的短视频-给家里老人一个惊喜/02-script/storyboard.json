@@ -1,0 +1,55 @@
+{
+  "shots": [
+    {
+      "id": "S1",
+      "t": [0, 5],
+      "narration": "这张黑白全家福,在我家相册里躺了五十年。你猜怎么着——她朝我眨眼了。",
+      "visual": "A restored 1960s Chinese black-and-white family portrait filling the full vertical frame, young woman in front center, vintage photo grain and slightly faded edges, warm soft light, nostalgic film texture; she suddenly blinks gently and the corners of her mouth lift into a subtle smile",
+      "motion": "First 2 seconds completely still (frozen photo), then subtle eye blink + micro smile, tiny slow zoom-in; soft camera shutter sound at the blink; caption \"她朝我眨眼了\"",
+      "kind": "gen-video"
+    },
+    {
+      "id": "S2",
+      "t": [5, 12],
+      "narration": "别急,三步就能让老照片活过来。第一步,修复:上色、磨皮、补细节,模糊的旧照一秒变清晰。",
+      "visual": "Split-screen vertical composition: top half a scratched blurry old photo, bottom half the same photo restored in natural color and sharp detail; clean tutorial screen-recording aesthetic, UI sliders adjusting color and clarity, bright neutral lighting",
+      "motion": "Wipe transition from damaged to restored version, color gradually bleeding into the black-and-white image; step label \"STEP 1 修复\" sliding in",
+      "kind": "motion-code"
+    },
+    {
+      "id": "S3",
+      "t": [12, 20],
+      "narration": "第二步,图生视频:把照片喂给AI,写一句提示词——\"轻微眨眼,嘴角上扬\"。记住,微动作最出效果,大幅动作容易穿帮。",
+      "visual": "Screen-recording style mockup of an AI image-to-video tool: a restored color portrait on the left, a text prompt box typing \"轻微眨眼,嘴角上扬\" on the right, then a generated video preview playing the subtle blink, dark modern UI, purple-blue accent glow",
+      "motion": "Typing animation of the prompt text, progress bar filling, then looping preview of the micro-motion result; step label \"STEP 2 图生视频\"",
+      "kind": "motion-code"
+    },
+    {
+      "id": "S4",
+      "t": [20, 27],
+      "narration": "第三步,合成:配上年代感的环境音,再加一段轻音乐,一条会呼吸的短视频就成了。",
+      "visual": "Vertical timeline editor mockup: video track with the animated portrait, waveform track showing ambient sound and gentle music layer, warm nostalgic color grading on the preview window, cozy dim workspace vibe with a cup of tea beside the laptop",
+      "motion": "Waveform bars animating with the audio, playhead sweeping across the timeline, preview window showing the portrait breathing softly; step label \"STEP 3 合成\"",
+      "kind": "motion-code"
+    },
+    {
+      "id": "S5",
+      "t": [27, 35],
+      "narration": "工具都摆在这儿了。但做出来给谁看?——该让正主看看了。",
+      "narration_note": "停顿一拍再念后半句",
+      "visual": "Over-the-shoulder shot: hands holding a smartphone showing the finished animated portrait video, warm living-room light, slightly shallow depth of field, the phone screen glowing as the only bright element, cinematic warm tones",
+      "motion": "Slow push-in toward the phone screen, screen light gently flickering as the video plays; narration pauses one beat before the second half",
+      "kind": "gen-image"
+    },
+    {
+      "id": "S6",
+      "t": [35, 45],
+      "narration": "奶奶看到二十岁的自己动起来,先是愣住,然后笑了,眼角有点湿。那一刻我明白:技术是壳,亲情才是核。你家抽屉里,是不是也有这样一张照片?",
+      "visual": "Cinematic vertical shot of a Chinese grandmother in her 80s watching a phone, soft window daylight on her face, authentic documentary style, her expression shifting from stunned stillness to a warm tearful smile, gentle skin texture, emotional and intimate framing",
+      "motion": "Real-reaction feel: slight handheld camera sway, slow motion on the moment she smiles; end card fades in with the golden quote \"技术是壳,亲情是核\" and closing question as caption",
+      "kind": "gen-video"
+    }
+  ],
+  "total_duration": 45,
+  "narration_total_chars": 210
+}

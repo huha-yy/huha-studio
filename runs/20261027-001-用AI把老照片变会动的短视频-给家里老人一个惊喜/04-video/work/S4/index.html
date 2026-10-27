@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="zh-CN" data-composition-variables='[
+  {"id":"stepNum","type":"string","label":"步骤号","default":"STEP 03"},
+  {"id":"stepTitle","type":"string","label":"步骤名","default":"合 成"},
+  {"id":"accent","type":"color","label":"强调色(金)","default":"#c99222"},
+  {"id":"paper","type":"color","label":"纸底","default":"#f5f2ea"},
+  {"id":"caption","type":"string","label":"底注","default":"一条会呼吸的短视频，就成了"},
+  {"id":"endHold","type":"number","label":"结尾停留","default":1.3,"min":0,"max":5,"step":0.1,"group":"节奏"}
+]'>
+<head>
+<meta charset="utf-8">
+<title>S4 · STEP 3 合成</title>
+<script src="vendor/gsap.min.js"></script>
+<style id="om-fonts">
+@font-face { font-family: "Noto Sans SC"; src: url("assets/fonts/NotoSansSC-500.woff") format("woff"); font-weight: 500; font-style: normal; }
+@font-face { font-family: "Noto Sans SC"; src: url("assets/fonts/NotoSansSC-900.woff") format("woff"); font-weight: 900; font-style: normal; }
+</style>
+<style>
+  html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; }
+  #film { position: relative; width: 100%; height: 100%; overflow: hidden; background: var(--paper); color: #2e2620; font-family: "Noto Sans SC", sans-serif; font-weight: 500; }
+  .paper-tex { position: absolute; inset: 0; background:
+      radial-gradient(1000px 600px at 15% 8%, #ffffff90, transparent 60%),
+      radial-gradient(800px 500px at 95% 96%, #00000008, transparent 60%); }
+
+  .step { position: absolute; left: 90px; top: 170px; display: flex; align-items: center; gap: 34px; }
+  .step .bar { width: 18px; height: 150px; background: var(--accent); }
+  .step .col { display: flex; flex-direction: column; gap: 10px; }
+  .step .num { font-size: 34px; letter-spacing: 12px; color: var(--accent); }
+  .step .name { font-size: 96px; font-weight: 900; letter-spacing: 14px; line-height: 1; }
+
+  /* 剪辑器卡 */
+  .editor { position: absolute; left: 90px; top: 430px; width: 900px; height: 1020px;
+      background: #fdfaf3; border-radius: 20px; box-shadow: 0 8px 44px #38281f22; }
+  .ed-top { display: flex; align-items: center; justify-content: space-between; padding: 24px 32px; border-bottom: 3px solid #eadfcb; }
+  .ed-top .t { font-size: 34px; letter-spacing: 4px; color: #6f6252; }
+  .loop { font-size: 30px; color: #8a6209; letter-spacing: 3px; opacity: 0; }
+
+  /* 预览窗:照片微呼吸 */
+  .monitor { position: absolute; left: 36px; top: 110px; width: 828px; height: 460px; border-radius: 14px; overflow: hidden; background: #241811; box-shadow: 0 4px 18px #38281f2e; }
+  .monitor svg { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -52%); }
+  .monitor .glow { position: absolute; inset: 0; background: radial-gradient(360px 300px at 50% 45%, #f3cf8e26, transparent 70%); }
+
+  /* 时间线 */
+  .tl-wrap { position: absolute; left: 36px; top: 620px; width: 828px; }
+  .track { display: flex; align-items: center; gap: 18px; margin-top: 26px; }
+  .tname { width: 130px; font-size: 30px; letter-spacing: 3px; color: #4d443a; flex: none; }
+  .lane { position: relative; flex: 1; height: 96px; border-radius: 10px; background: #efe7d6; overflow: hidden; }
+  /* 视频轨:三格照片缩略 */
+  .clip { position: absolute; top: 8px; height: 80px; width: 252px; border-radius: 8px; overflow: hidden; background: #e8d5b5; }
+  .clip + .clip { left: 262px; } .clip + .clip + .clip { left: 524px; }
+  .clip svg { display: block; }
+  /* 音频轨:波形条 */
+  .bars { position: absolute; inset: 0; display: flex; align-items: center; justify-content: space-between; padding: 0 10px; }
+  .bars i { display: block; width: 9px; border-radius: 4px; background: #c9a86a; transform: scale(var(--s, .3), 1); transform-origin: 50% 50%; }
+  .lane.music .bars i { background: var(--accent); }
+  /* 播放头 */
+  .playhead { position: absolute; left: 148px; top: -8px; bottom: -8px; width: 5px; border-radius: 3px; background: #c2492b; }
+  .playhead::after { content: ''; position: absolute; left: 50%; top: -10px; transform: translateX(-50%); border: 12px solid transparent; border-top: 16px solid #c2492b; }
+
+  .caption { position: absolute; left: 0; right: 0; bottom: 150px; text-align: center; font-size: 52px; letter-spacing: 8px; opacity: 0; }
+</style>
+</head>
+<body>
+<div id="film" data-composition-id="film" data-width="1080" data-height="1920" data-duration="7">
+  <div class="paper-tex"></div>
+
+  <div class="step" data-om-id="step">
+    <div class="bar" data-om-id="step-bar"></div>
+    <div class="col">
+      <div class="num" data-om-id="step-num" data-var-text="stepNum">STEP 03</div>
+      <div class="name" data-om-id="step-name" data-var-text="stepTitle">合 成</div>
+    </div>
+  </div>
+
+  <div class="editor" data-om-id="editor">
+    <div class="ed-top" data-om-id="ed-top">
+      <span class="t">剪辑 · 老照片动了.mp4</span>
+      <span class="loop" data-om-id="loop">↻ 导出 1080×1920</span>
+    </div>
+
+    <div class="monitor" data-om-id="monitor">
+      <div class="glow"></div>
+      <svg id="portrait" data-om-id="portrait" viewBox="0 0 300 400" width="345" height="460">
+        <rect width="300" height="400" fill="#e8d5b5"/>
+        <ellipse cx="150" cy="368" rx="140" ry="30" fill="#b39a74"/>
+        <g fill="#8a6a52">
+          <circle cx="150" cy="140" r="54"/>
+          <path d="M150 206 C86 206 72 300 76 400 L224 400 C228 300 214 206 150 206 Z"/>
+        </g>
+        <g id="eyes4">
+          <rect x="118" y="134" width="24" height="5" rx="2.5" fill="#4a3a2c"/>
+          <rect x="160" y="134" width="24" height="5" rx="2.5" fill="#4a3a2c"/>
+        </g>
+        <path id="mouth4" d="M134 180 Q150 192 168 180" stroke="#4a3a2c" stroke-width="4" fill="none" stroke-linecap="round"/>
+      </svg>
+    </div>
+
+    <div class="tl-wrap" data-om-id="timeline">
+      <div class="track v" data-om-id="track-video">
+        <span class="tname">视 频</span>
+        <span class="lane">
+          <span class="clip"><svg viewBox="0 0 252 80" width="252" height="80"><rect width="252" height="80" fill="#e8d5b5"/><circle cx="126" cy="30" r="16" fill="#8a6a52"/><path d="M126 48 C104 48 100 66 102 80 L150 80 C152 66 148 48 126 48Z" fill="#8a6a52"/></svg></span>
+          <span class="clip"><svg viewBox="0 0 252 80" width="252" height="80"><rect width="252" height="80" fill="#e0cba6"/><circle cx="126" cy="30" r="16" fill="#8a6a52"/><path d="M126 48 C104 48 100 66 102 80 L150 80 C152 66 148 48 126 48Z" fill="#8a6a52"/></svg></span>
+          <span class="clip"><svg viewBox="0 0 252 80" width="252" height="80"><rect width="252" height="80" fill="#e8d5b5"/><circle cx="126" cy="30" r="16" fill="#8a6a52"/><path d="M126 48 C104 48 100 66 102 80 L150 80 C152 66 148 48 126 48Z" fill="#8a6a52"/></svg></span>
+        </span>
+      </div>
+      <div class="track a" data-om-id="track-ambient">
+        <span class="tname">环境音</span>
+        <span class="lane"><span class="bars" id="bars-a"></span></span>
+      </div>
+      <div class="track music" data-om-id="track-music">
+        <span class="tname">轻音乐</span>
+        <span class="lane music"><span class="bars" id="bars-m"></span></span>
+      </div>
+      <span class="playhead" data-om-id="playhead" style="top:0"></span>
+    </div>
+  </div>
+
+  <div class="caption" data-om-id="caption" data-om-var="caption">一条会呼吸的短视频，就成了</div>
+</div>
+
+<script>
+  const V = OM.vars();
+  // 生成波形条(确定性伪随机)
+  const rnd = (seed) => { let x = Math.sin(seed * 127.1) * 43758.5453; return x - Math.floor(x); };
+  const mkBars = (id, n, min, max) => {
+    const el = document.getElementById(id);
+    for (let i = 0; i < n; i++) {
+      const b = document.createElement('i');
+      b.style.height = (min + rnd(i + n * 7) * (max - min)) + 'px';
+      el.appendChild(b);
+    }
+  };
+  mkBars('bars-a', 40, 18, 66);
+  mkBars('bars-m', 40, 26, 84);
+
+  const tl = gsap.timeline({ paused: true, defaults: { ease: 'power3.out' } });
+
+  tl.addLabel('scene:enter', 0)
+    .fromTo('.editor', { opacity: 0, y: 60 }, { opacity: 1, y: 0, duration: .7, ease: 'expo.out' }, .1)
+    .fromTo('.step .bar', { scaleY: 0 }, { scaleY: 1, duration: .5, transformOrigin: '50% 0' }, .2)
+    .fromTo('.step .num', { opacity: 0, x: -24 }, { opacity: 1, x: 0, duration: .5 }, .3)
+    .fromTo('.step .name', { opacity: 0, x: -36 }, { opacity: 1, x: 0, duration: .6 }, .4)
+    .fromTo('.monitor', { opacity: 0, scale: .94 }, { opacity: 1, scale: 1, duration: .6, ease: 'back.out(1.4)' }, .5)
+    .fromTo('.track.v', { opacity: 0, x: -30 }, { opacity: 1, x: 0, duration: .45 }, .95)
+    .fromTo('.track.a', { opacity: 0, x: -30 }, { opacity: 1, x: 0, duration: .45 }, 1.1)
+    .fromTo('.track.music', { opacity: 0, x: -30 }, { opacity: 1, x: 0, duration: .45 }, 1.25)
+    .fromTo('.playhead', { opacity: 0 }, { opacity: 1, duration: .3 }, 1.4);
+
+  // 播放头扫过时间线
+  tl.addLabel('scene:play', 1.6)
+    .fromTo('.playhead', { x: 0 }, { x: 680, duration: 3.6, ease: 'none' }, 1.7)
+    // 波形随播头跳动
+    .fromTo('#bars-a i', { '--s': .3 }, { '--s': 1, duration: .22, stagger: { each: .045, repeat: 8, yoyo: true }, ease: 'sine.inOut' }, 1.7)
+    .fromTo('#bars-m i', { '--s': .3 }, { '--s': 1, duration: .3, stagger: { each: .06, repeat: 6, yoyo: true }, ease: 'sine.inOut' }, 1.9)
+    // 预览窗:呼吸 + 两次眨眼 + 微笑
+    .fromTo('#portrait', { scaleY: 1 }, { scaleY: 1.012, duration: 1.4, yoyo: true, repeat: 3, ease: 'sine.inOut', transformOrigin: '50% 90%' }, 1.8)
+    .fromTo('#eyes4', { scaleY: 1 }, { scaleY: .12, duration: .1, yoyo: true, repeat: 1, ease: 'power1.inOut', transformOrigin: '50% 134px' }, 2.6)
+    .fromTo('#eyes4', { scaleY: 1 }, { scaleY: .12, duration: .1, yoyo: true, repeat: 1, ease: 'power1.inOut', transformOrigin: '50% 134px' }, 4.2)
+    .fromTo('#mouth4', { attr: { d: 'M134 180 Q150 188 168 180' } }, { attr: { d: 'M134 180 Q150 196 168 180' }, duration: .8 }, 2.8)
+    // 已播放段高亮 + 完成
+    .fromTo('.loop', { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: .5 }, 5.3)
+    .fromTo('.caption', { opacity: 0, y: 26 }, { opacity: 1, y: 0, duration: .8 }, 5.4)
+    .fromTo('.playhead', { x: 680 }, { x: 20, duration: .8, ease: 'power2.inOut' }, 5.6)
+    .to({}, { duration: V.endHold });
+
+  window.__timelines['film'] = tl;
+</script>
+</body>
+</html>

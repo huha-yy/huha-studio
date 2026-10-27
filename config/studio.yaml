@@ -1,6 +1,6 @@
 # 全局服务配置(素材服务与 PixOffice,非 LLM)
 
-services:
+services:  # comfyui 已停用(2026-10-27 转纯代码路线),保留配置备用
   comfyui:
     base_url: http://127.0.0.1:8188      # 生图/生视频(Qwen-Image/LTX-2/MiniMax H3/Wan2.2)
     workflows_dir: ~/ComfyUI/user/default/workflows

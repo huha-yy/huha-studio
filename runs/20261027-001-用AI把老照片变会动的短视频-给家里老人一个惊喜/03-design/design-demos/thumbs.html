@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:#2b2b2b; font-family:"Noto Serif CJK SC",serif; display:flex; flex-direction:column; align-items:center; padding:24px; gap:20px; }
+  .row { display:flex; gap:20px; }
+  .cell { display:flex; flex-direction:column; align-items:center; gap:8px; }
+  .cap { color:#bbb; font-size:13px; font-family:"Noto Sans CJK SC",sans-serif; letter-spacing:1px; }
+  .cover { width:270px; height:480px; overflow:hidden; position:relative; }
+
+  /* C1 吕敬人·相册扉页 */
+  .c1 { background:#6e2b22; background-image:repeating-linear-gradient(0deg,rgba(0,0,0,.18) 0 1px,transparent 1px 3px),repeating-linear-gradient(90deg,rgba(0,0,0,.14) 0 1px,transparent 1px 3px),radial-gradient(ellipse at 50% 40%,#7d342a 0%,#5d241d 100%); display:flex; align-items:center; justify-content:center; }
+  .c1 .photo { width:150px; height:196px; background:linear-gradient(160deg,#d8cdb4 0%,#c9bda2 55%,#b3a68a 100%); position:relative; box-shadow:0 6px 18px rgba(0,0,0,.5); }
+  .c1 .photo .fig { position:absolute; left:50%; top:38%; transform:translateX(-50%); width:64px; height:78px; border-radius:32px 32px 8px 8px; background:radial-gradient(circle at 50% 30%,#6f6a5e,#4a463d); filter:blur(1.2px); }
+  .c1 .photo::after { content:""; position:absolute; inset:0; background:radial-gradient(ellipse at center,transparent 55%,rgba(90,80,55,.5) 100%); }
+  .c1 .mount { position:absolute; width:0; height:0; border:11px solid rgba(240,232,210,.85); }
+  .c1 .m-tl { top:-2px; left:-2px; border-right-color:transparent; border-bottom-color:transparent; }
+  .c1 .m-tr { top:-2px; right:-2px; border-left-color:transparent; border-bottom-color:transparent; }
+  .c1 .m-bl { bottom:-2px; left:-2px; border-right-color:transparent; border-top-color:transparent; }
+  .c1 .m-br { bottom:-2px; right:-2px; border-left-color:transparent; border-top-color:transparent; }
+  .c1 .title { position:absolute; right:26px; top:56px; writing-mode:vertical-rl; font-size:26px; font-weight:900; color:#f0e6cf; letter-spacing:10px; }
+  .c1 .sub { position:absolute; left:28px; bottom:48px; writing-mode:vertical-rl; font-size:11px; color:rgba(240,230,207,.75); letter-spacing:5px; }
+  .c1 .seal { position:absolute; left:26px; top:56px; width:34px; height:34px; background:#c0392b; color:#f5ead2; font-family:"AR PL UKai CN"; font-size:13px; display:flex; align-items:center; justify-content:center; line-height:1.1; text-align:center; box-shadow:inset 0 0 0 1.5px rgba(245,234,210,.5); }
+
+  /* C2 黄海·闭眼 */
+  .c2 { background:#efe8da; display:flex; flex-direction:column; }
+  .c2 .eyezone { flex:1; display:flex; align-items:center; justify-content:center; }
+  .c2 .quote { position:absolute; top:36px; left:32px; writing-mode:vertical-rl; font-size:12px; color:#8a8072; letter-spacing:6px; }
+  .c2 .title { padding:0 30px 30px; }
+  .c2 h1 { font-size:31px; font-weight:900; color:#26221c; letter-spacing:2px; line-height:1.5; }
+  .c2 .sub { margin-top:12px; font-size:12px; color:#8a8072; letter-spacing:4px; font-family:"Noto Sans CJK SC",sans-serif; }
+
+  /* C3 四个春天·纪实 */
+  .c3 { background:#fff; display:flex; flex-direction:column; }
+  .c3 .scene { flex:1; background:radial-gradient(circle at 62% 34%,#f6d9a0 0%,#d9a86b 18%,#5a4636 55%,#332720 100%); position:relative; overflow:hidden; }
+  .c3 .bokeh { position:absolute; border-radius:50%; background:rgba(255,220,160,.35); filter:blur(6px); }
+  .c3 .sil { position:absolute; bottom:0; background:#241a13; }
+  .c3 .text { padding:22px 24px 26px; }
+  .c3 .talk { font-size:17px; font-weight:700; color:#2e2620; line-height:1.7; }
+  .c3 .tagline { margin-top:12px; font-size:11px; color:#9b8b76; letter-spacing:2px; font-family:"Noto Sans CJK SC",sans-serif; }
+
+  /* C4 李焕英·留念 */
+  .c4 { background:#cfc8b8; padding:16px 14px; display:flex; }
+  .c4 .photo { flex:1; background:#f4efe2; padding:10px 10px 0; box-shadow:0 4px 14px rgba(0,0,0,.35); display:flex; flex-direction:column; }
+  .c4 .frame { flex:1; border:2px solid #a5936f; outline:1px solid #a5936f; outline-offset:3px; background:radial-gradient(ellipse at 50% 30%,#c9c3b1 0%,#8e8877 60%,#5c574a 100%); position:relative; overflow:hidden; }
+  .c4 .fig { position:absolute; bottom:0; background:#3f3a31; filter:blur(2px); }
+  .c4 .liunian { position:absolute; top:10px; right:10px; color:#b03a2e; font-family:"AR PL UKai CN"; font-size:15px; border:1.5px solid #b03a2e; padding:3px 5px; letter-spacing:2px; }
+  .c4 .caption { height:44px; display:flex; align-items:center; justify-content:space-between; font-family:"AR PL UKai CN"; color:#6b5f4b; font-size:14px; }
+  .c4 .title { margin-top:14px; background:#f4efe2; font-size:19px; font-weight:900; color:#2e2a22; text-align:center; padding:10px 0; letter-spacing:2px; }
+
+  /* C5 utility docs */
+  .c5 { background:#fff; padding:34px 24px; display:flex; flex-direction:column; gap:14px; }
+  .c5 .kicker { font-size:11px; letter-spacing:3px; color:#0866c6; font-family:"Noto Sans CJK SC",sans-serif; font-weight:700; }
+  .c5 h1 { font-size:30px; font-weight:900; color:#111; letter-spacing:1px; }
+  .c5 .step { border:2px solid #111; padding:12px 14px; display:flex; align-items:center; gap:12px; }
+  .c5 .num { font-family:"Noto Sans CJK SC"; font-weight:900; font-size:20px; }
+  .c5 .s1 .num { color:#d9381e; } .c5 .s2 .num { color:#0866c6; } .c5 .s3 .num { color:#b07d10; }
+  .c5 .st { font-size:14px; font-weight:700; color:#111; } .c5 .sd { font-size:10px; color:#777; margin-top:2px; }
+  .c5 .foot { margin-top:auto; font-size:10px; color:#999; letter-spacing:2px; }
+
+  /* C6 east07 传统色 */
+  .c6 { background:#f3efe1; display:flex; flex-direction:column; }
+  .c6 .head { padding:44px 26px 0; }
+  .c6 .meta { font-size:11px; color:#6f6e63; letter-spacing:4px; font-family:"Noto Sans CJK SC",sans-serif; }
+  .c6 h1 { margin-top:16px; font-size:30px; font-weight:900; color:#22211d; letter-spacing:2px; line-height:1.55; }
+  .c6 h1 em { font-style:normal; color:#ce4326; }
+  .c6 .note { margin-top:14px; font-family:"AR PL UKai CN"; font-size:14px; color:#6f6e63; }
+  .c6 .band { margin-top:auto; display:flex; align-items:flex-end; height:118px; }
+  .c6 .bar { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-start; padding-top:6px; }
+  .c6 .bar span { writing-mode:vertical-rl; font-size:9px; color:rgba(255,255,255,.85); font-family:"Noto Sans CJK SC",sans-serif; }
+  .c6 .bar.up { flex:1.5; }
+  .c6 .bar.up span { font-size:12px; color:#fff; }
+</style>
+</head>
+<body>
+<div class="row">
+  <div class="cell"><div class="cover c1">
+    <div class="seal">眨<br>眼</div>
+    <div class="title">奶奶二十岁</div>
+    <div class="sub">相册里躺了五十年</div>
+    <div class="photo">
+      <div class="mount m-tl"></div><div class="mount m-tr"></div><div class="mount m-bl"></div><div class="mount m-br"></div>
+      <div class="fig"></div>
+    </div>
+  </div><div class="cap">C1 吕敬人·相册扉页</div></div>
+
+  <div class="cell"><div class="cover c2">
+    <div class="quote">五十年前的黑白照片</div>
+    <div class="eyezone">
+      <svg width="180" height="90" viewBox="0 0 180 90">
+        <path d="M14 58 Q90 6 166 58" fill="none" stroke="#2a2622" stroke-width="5" stroke-linecap="round"/>
+        <path d="M40 34 L30 14" stroke="#2a2622" stroke-width="4" stroke-linecap="round"/>
+        <path d="M70 22 L66 2" stroke="#2a2622" stroke-width="4" stroke-linecap="round"/>
+        <path d="M110 22 L114 2" stroke="#2a2622" stroke-width="4" stroke-linecap="round"/>
+        <path d="M140 34 L150 14" stroke="#2a2622" stroke-width="4" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div class="title">
+      <h1>她朝我<br>眨了眨眼</h1>
+      <div class="sub">AI 让老照片活过来</div>
+    </div>
+  </div><div class="cap">C2 黄海·闭眼留白</div></div>
+
+  <div class="cell"><div class="cover c3">
+    <div class="scene">
+      <div class="bokeh" style="width:30px;height:30px;left:40px;top:60px;"></div>
+      <div class="bokeh" style="width:18px;height:18px;left:180px;top:100px;"></div>
+      <div class="bokeh" style="width:44px;height:44px;left:90px;top:150px;background:rgba(255,235,190,.25)"></div>
+      <div class="sil" style="left:36px;bottom:0;width:56px;height:120px;border-radius:28px 28px 0 0;"></div>
+      <div class="sil" style="left:110px;bottom:0;width:70px;height:88px;border-radius:10px 10px 0 0;"></div>
+      <div class="sil" style="left:196px;bottom:0;width:52px;height:140px;border-radius:26px 26px 0 0;"></div>
+    </div>
+    <div class="text">
+      <div class="talk">你家抽屉里,<br>是不是也有一张?</div>
+      <div class="tagline">AI 让老照片活过来 · 45 秒</div>
+    </div>
+  </div><div class="cap">C3 四个春天·纪实</div></div>
+</div>
+<div class="row">
+  <div class="cell"><div class="cover c4">
+    <div class="photo">
+      <div class="frame">
+        <div class="liunian">留念</div>
+        <div class="fig" style="left:22px;width:40px;height:96px;border-radius:20px 20px 0 0;"></div>
+        <div class="fig" style="left:72px;width:34px;height:130px;border-radius:17px 17px 0 0;"></div>
+        <div class="fig" style="left:116px;width:34px;height:150px;border-radius:17px 17px 0 0;"></div>
+        <div class="fig" style="left:160px;width:40px;height:110px;border-radius:20px 20px 0 0;"></div>
+      </div>
+      <div class="caption"><span>一九七二年 · 春</span><span>全家福</span></div>
+    </div>
+    <div class="title">这张照片,朝我眨了眨眼</div>
+  </div><div class="cap">C4 李焕英·照相馆留念</div></div>
+
+  <div class="cell"><div class="cover c5">
+    <div class="kicker">AI 教程 · 45 秒学会</div>
+    <h1>老照片<br>复活三步</h1>
+    <div class="step s1"><div class="num">01</div><div><div class="st">修复</div><div class="sd">上色 · 磨皮 · 补细节</div></div></div>
+    <div class="step s2"><div class="num">02</div><div><div class="st">图生视频</div><div class="sd">「轻微眨眼,嘴角上扬」</div></div></div>
+    <div class="step s3"><div class="num">03</div><div><div class="st">合成</div><div class="sd">环境音 · 轻音乐</div></div></div>
+    <div class="foot">奶奶看到那一刻,值得</div>
+  </div><div class="cap">C5 轮盘web15·工具教程</div></div>
+
+  <div class="cell"><div class="cover c6">
+    <div class="head">
+      <div class="meta">一九七二年 · 全家福</div>
+      <h1>她朝我<br><em>眨</em>了眨眼</h1>
+      <div class="note">黑白五十年,一秒活过来</div>
+    </div>
+    <div class="band">
+      <div class="bar" style="height:62px;background:#8c8878;"><span>泛黄</span></div>
+      <div class="bar" style="height:66px;background:#9a9280;"><span>褪色</span></div>
+      <div class="bar" style="height:70px;background:#a3987e;"><span>磨皮</span></div>
+      <div class="bar" style="height:74px;background:#ac9a72;"><span>补细节</span></div>
+      <div class="bar" style="height:78px;background:#b3915f;"><span>上色</span></div>
+      <div class="bar" style="height:82px;background:#bb8a52;"><span>暖调</span></div>
+      <div class="bar" style="height:86px;background:#c07b48;"><span>显影</span></div>
+      <div class="bar" style="height:90px;background:#c46a3f;"><span>微动</span></div>
+      <div class="bar" style="height:94px;background:#cd5630;"><span>眨眼</span></div>
+      <div class="bar up" style="height:118px;background:#d0421f;"><span>活过来</span></div>
+    </div>
+  </div><div class="cap">C6 轮盘east7·传统色</div></div>
+</div>
+</body>
+</html>

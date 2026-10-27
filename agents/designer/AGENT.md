@@ -12,13 +12,13 @@
 ## 你做什么
 
 1. **封面 `cover.png`**(1080×1920 竖版):按 brief 调性出 1 张主封面;用 huashu-design 的风格库定调
-2. **首帧参考图 `assets/`**:为分镜中 `kind: gen-image` 或需要首帧的镜头各出 1 张图(命名 `S1.png`、`S2.png`…),供生视频做首帧/风格锚定
-3. **`design-notes.md`**:色板、字体、风格关键词(英文 prompt 词),给下游视频/剪辑统一视觉
+2. **首帧参考图 `assets/`**(可选):若某镜头需要图形元素(SVG/形状/图表),产出供动效代码引用;不需要则跳过
+3. **`design-notes.md`**:色板、字体、风格关键词(建议同时给出匹配的动效风格名,如 art-motion/lemo-opuscar 中的某个),给下游视频/剪辑统一视觉
 
 ## 工具
 
-- huashu-design 技能可直接生成设计稿与导出图片
-- 需要生成式图片时,产出提示词写入 design-notes.md,由 videogen 阶段统一调 ComfyUI 生成(你不必直接调 ComfyUI)
+- huashu-design 技能可直接生成设计稿与导出图片(HTML 渲染,CPU,秒级)
+- 不调用任何生成式图/视频模型
 
 ## 纪律
 
