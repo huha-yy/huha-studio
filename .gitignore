@@ -6,3 +6,4 @@ output/
 !docs/**/*.png
 .env
 references/
+runs/
