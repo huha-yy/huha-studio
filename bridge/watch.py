@@ -334,10 +334,15 @@ def main():
             h = json.dumps({'tasks': {k: {'topic': v['topic'], 'stages': v['stages'], 'final': v['final']}
                                       for k, v in tasks.items()},
                             'sys': bucket}, sort_keys=True, ensure_ascii=False).__hash__()
+            first_round = not last_stages
             for tid, stages in tasks_state.items():
                 for sid, s in stages.items():
                     key = (tid, sid, s['status'])
                     if key in last_stages.get(tid, set()):
+                        continue
+                    if first_round:
+                        # 启动首轮:历史状态只登记不触发,避免重启重放整个历史(气泡轰炸)
+                        last_stages.setdefault(tid, set()).add(key)
                         continue
                     last_stages.setdefault(tid, set()).add(key)
                     agent = STAGE_TO_AGENT.get(sid)
