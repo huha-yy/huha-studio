@@ -29,7 +29,7 @@
 ## 行动建议(优先级)
 
 1. ✅ 装 lemo-opuscar(#2)——已装,videogen 技能池在用
-2. 🔄 **过一遍 opus-video-prompts(#8)和 awesome 合集(#1)**——提炼 20 条爆款打法建打法库(docs/viral-patterns.md,进行中)
+2. ✅ **过一遍 opus-video-prompts(#8)和 awesome 合集(#1)**——已提炼 20 条打法入库(docs/viral-patterns.md),planner 升级"热点×打法"选题
 3. ✅ 克隆 mg-styles-15(#5)和 pdoom-video(#3)——已在 references/,拆解待需
 4. ⬜ ClaudeAnimationBase(#6)——等确定做 IP 形象内容时再启用
 
