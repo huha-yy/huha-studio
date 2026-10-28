@@ -236,7 +236,13 @@ def build(oid, tasks, seq, all_tasks=None, sysd=None):
             from urllib.parse import quote
             board['link'] = {'label': '▶ 看成片', 'url': f"{RUNS_SERVER}/{quote(tid)}/06-edit/final.mp4"}
         tasks_list = []
-        for sid, s in ({} if life == 'completed' else t['stages']).items():   # 完结任务撤掉阶段任务牌,工位不再常驻"已完成"
+        if life == 'completed':
+            # 完结任务:撤掉阶段任务牌,但保留一张交付卡(挂运营名下)——任务中心不空窗,桌面只占领导位一格
+            cost = sum(c.get('cost_usd') or 0 for c in t['stages'].values())
+            tasks_list.append({'id': f'{tid}-delivery', 'title': f'交付:{t["topic"][:10]}',
+                               'assigneeId': 'ops', 'status': 'completed', 'progress': 100,
+                               'summary': f'成片就绪·总成本${cost:.2f}', 'updatedAt': t['mtime']})
+        for sid, s in ({} if life == 'completed' else t['stages']).items():
             agent = STAGE_TO_AGENT.get(sid)
             if not agent or OFFICE_OF.get(agent) != oid:
                 continue
