@@ -253,7 +253,7 @@ def build(oid, tasks, seq, all_tasks=None, sysd=None):
     active = lifes.count('active')
     latest = list(tasks.values())[-1] if items else None
     overview_tasks = []
-    if latest:
+    if latest and _lifecycle(latest['stages']) != 'completed':   # 总览同样:完结任务撤牌
         for sid, sv in latest['stages'].items():
             agent = STAGE_TO_AGENT.get(sid)
             if not agent or OFFICE_OF.get(agent) != oid:
