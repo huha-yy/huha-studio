@@ -303,6 +303,13 @@ def cmd_resume(args):
         for s in pipeline['stages'][failed_at:]:
             state['stages'][s['id']]['status'] = 'pending'
         write_state(task_dir, state)
+        # 打回即清场:重置阶段连同其旧产物一并清除,避免断点续跑语义把旧产出搬进新版本
+        import shutil
+        for s in pipeline['stages'][failed_at:]:
+            d = task_dir / s['dir']
+            if d.exists():
+                shutil.rmtree(d)
+        log(f'已清空重置阶段的旧产物:{[s["id"] for s in pipeline["stages"][failed_at:]]}')
     log(f"续跑 {args.task_id}")
     execute(task_dir, pipeline, agents, models, global_skills, args)
 
