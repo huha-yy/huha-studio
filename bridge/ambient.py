@@ -97,11 +97,20 @@ def act(team):
                 [{'entityId': s['hostId'], 'role': 'host'} for s in stops],
                 {'stops': stops, 'durationMs': 3000})
         return f'visit:{visitor[:12]}→{len(stops)}站 {r.get("code")}'
-    if roll < 0.70:                                 # 白板小会
+    if roll < 0.35:                                 # 围桌小会(坐着开)
+        crowd = random.sample([a for a in actors if a != 'office-lead'],
+                              k=random.choice((1, 2)))
+        r = cmd(team, 'office.table-meeting',
+                [{'entityId': 'office-lead', 'role': 'speaker'}] +
+                [{'entityId': a, 'role': 'attendee'} for a in crowd],
+                {'tableId': 'conference-table-1', 'text': random.choice(MEETING_LINES),
+                 'durationMs': 15000})
+        return f'table-meeting×{len(crowd) + 1} {r.get("code")}'
+    if roll < 0.70:                                 # 白板小会(站着开)
         crowd = random.sample([a for a in actors if a != 'office-lead'],
                                k=min(2, len(actors) - 1))
         r = cmd(team, 'office.meeting',
-                [{'entityId': 'office-lead', 'role': 'attendee'}] +
+                [{'entityId': 'office-lead', 'role': 'speaker'}] +
                 [{'entityId': a, 'role': 'attendee'} for a in crowd],
                 {'boardId': 'office.wall-whiteboard', 'text': random.choice(MEETING_LINES),
                  'durationMs': 12000})

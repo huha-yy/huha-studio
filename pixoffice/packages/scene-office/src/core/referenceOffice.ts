@@ -22,7 +22,22 @@ export const referenceOfficeObjects: ScenePlugin = {
     { id: 'office.wall-whiteboard', name: '后墙协作白板', view: 'wall-whiteboard', footprint: { left: 0, top: 0, right: 12, bottom: 1 }, initialState: { title: '', tasks: [] },
       interactions: { write: { name: '查看白板', anchor: 'attendee1', approaches: ['attendee1'], cells: [], posture: 'standing', facing: 'back', resource: 'meeting' } },
       anchors: { attendee1: { x: 5, y: 1 }, attendee2: { x: 6, y: 1 }, attendee3: { x: 5, y: 2 }, attendee4: { x: 6, y: 2 } }, resources: { meeting: 1 } },
-    { id: 'office.conference-table', name: '会议桌椅', view: 'conference-table', footprint: { left: 0, top: 0, right: 8, bottom: 3 }, anchors: {}, resources: {} },
+    { id: 'office.conference-table', name: '会议桌椅', view: 'conference-table', footprint: { left: 0, top: 0, right: 8, bottom: 3 },
+      // 本地增强:会议桌可入座(上游为纯装饰)。上排 3 座(入口对准桌上方空档)+ 两端各 1 座;下排贴地图边缘,不作座位。
+      interactions: {
+        sit1: { name: '入座', anchor: 'seat1', approaches: ['approach1'], cells: [{ x: 2, y: 0 }], posture: 'seated', facing: 'front', resource: 'sit1' },
+        sit2: { name: '入座', anchor: 'seat2', approaches: ['approach2'], cells: [{ x: 3, y: 0 }], posture: 'seated', facing: 'front', resource: 'sit2' },
+        sit3: { name: '入座', anchor: 'seat3', approaches: ['approach3'], cells: [{ x: 4, y: 0 }], posture: 'seated', facing: 'front', resource: 'sit3' },
+        sit4: { name: '入座', anchor: 'seat4', approaches: ['approach4'], cells: [{ x: 0, y: 1 }], posture: 'seated', facing: 'right', resource: 'sit4' },
+        sit5: { name: '入座', anchor: 'seat5', approaches: ['approach5'], cells: [{ x: 7, y: 1 }], posture: 'seated', facing: 'left', resource: 'sit5' },
+      },
+      anchors: {
+        seat1: { x: 2, y: 0 }, approach1: { x: 2, y: -1 },
+        seat2: { x: 3, y: 0 }, approach2: { x: 3, y: -1 },
+        seat3: { x: 4, y: 0 }, approach3: { x: 4, y: -1 },
+        seat4: { x: 0, y: 1 }, approach4: { x: -1, y: 1 },
+        seat5: { x: 7, y: 1 }, approach5: { x: 8, y: 1 },
+      }, resources: { sit1: 1, sit2: 1, sit3: 1, sit4: 1, sit5: 1 } },
   ],
   stateSchemas: { 'office.wall-whiteboard': z.strictObject({ title: z.string().max(80).default(''),
     taskBoard: whiteboardTaskBoardSchema.optional(), tasks: z.array(task).max(12).optional() }) },
