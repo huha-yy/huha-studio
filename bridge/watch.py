@@ -311,6 +311,7 @@ def main():
     ap.add_argument('--dry', action='store_true', help='只打印不推送')
     args = ap.parse_args()
     last_hash, seqs, last_stages = None, {}, {}
+    last_sys_bucket, last_push_ts = None, 0.0
     meter = SystemMeter()
     # 续接服务端已有 seq,避免重启后同 seq 不同快照被拒(409)
     try:
@@ -327,13 +328,16 @@ def main():
             tasks, tasks_state = collect()
             recent = dict(list(tasks.items())[-5:])
             sysd = meter.sample()
-            # 资源分桶进变化检测:读数明显变化时自动推新快照(避免空闲时资源面板停滞)
-            bucket = (round(max(0, sysd['cpuPercent']) / 5) * 5,
+            # 内容与资源解耦:内容(任务)变化即时推;资源读数仅在分桶跨档且距上次推送≥30s 时刷新,
+            # 否则流水线一跑 CPU 翻腾会造成每几秒一次快照轰炸(白板反复黑闪)
+            bucket = (round(max(0, sysd['cpuPercent']) / 10) * 10,
                       round(sysd['memoryPercent']),
-                      round(max(0, sysd['networkKbps']) / 100) * 100)
-            h = json.dumps({'tasks': {k: {'topic': v['topic'], 'stages': v['stages'], 'final': v['final']}
-                                      for k, v in tasks.items()},
-                            'sys': bucket}, sort_keys=True, ensure_ascii=False).__hash__()
+                      round(max(0, sysd['networkKbps']) / 500) * 500)
+            now_ts = time.time()
+            content_h = json.dumps({k: {'topic': v['topic'], 'stages': v['stages'], 'final': v['final']}
+                                    for k, v in tasks.items()}, sort_keys=True, ensure_ascii=False).__hash__()
+            h = content_h if content_h != last_hash else (
+                bucket if (bucket != last_sys_bucket and now_ts - last_push_ts >= 30) else last_hash)
             first_round = not last_stages
             for tid, stages in tasks_state.items():
                 for sid, s in stages.items():
@@ -370,7 +374,9 @@ def main():
                         continue
                     print(f'[{time.strftime("%H:%M:%S")}] {oid} seq={seqs[oid]} → {r.get("code")} '
                           f'{r.get("msg", "")[:40]}')
-                last_hash = h
+                last_hash = content_h
+                last_sys_bucket = bucket
+                last_push_ts = now_ts
         except Exception as e:
             print(f'[{time.strftime("%H:%M:%S")}] {e}', flush=True)
         time.sleep(args.interval)
