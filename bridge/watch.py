@@ -224,10 +224,10 @@ def build(oid, tasks, seq, all_tasks=None, sysd=None):
         done = sum(1 for s in t['stages'].values() if s['status'] == 'done')
         life = _lifecycle(t['stages'])
         finished = life == 'completed'
-        board = {'template': 'task-board-v1', 'title': t['topic'][:38],
+        board = {'template': 'task-board-v1', 'title': t['topic'][:12],
                  'status': 'completed' if finished else ('failed' if life == 'aborted' else 'running'),
-                 'tagline': f"{'✅' if finished else ('已中止' if life == 'aborted' else '制作中')} {done}/{total} 阶段",
-                 'description': '选题 → 剧本 → 视觉 → 视频 → 配音 → 合成 → 审核',
+                 'tagline': f"{'完结' if finished else ('中止' if life == 'aborted' else '制作中')} {done}/{total}",
+                 'description': '',
                  'steps': [
                      {'id': 'c', 'title': '创意', 'progress': _progress(t['stages'], ('brief', 'script'))},
                      {'id': 'v', 'title': '视觉/视频', 'progress': _progress(t['stages'], ('design', 'video'))},
@@ -243,7 +243,7 @@ def build(oid, tasks, seq, all_tasks=None, sysd=None):
             tasks_list.append({'id': f'{tid}-{sid}', 'title': f'{spec["agents"][agent][0]}·{sid}',
                                'assigneeId': agent, 'status': TASK_STATUS.get(s['status'], 'queued'),
                                'progress': -1, 'summary': '', 'updatedAt': t['mtime']})
-        convs.append({'id': conv_id(tid), 'title': t['topic'][:38], 'whiteboard': board,
+        convs.append({'id': conv_id(tid), 'title': t['topic'][:16], 'whiteboard': board,
                       'employees': employees, 'tasks': tasks_list, 'events': []})
     # 永久保留 main 总览会话:任何旧选中/默认会话永远合法
     items = list(tasks.values())
