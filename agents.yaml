@@ -21,14 +21,14 @@ agents:
     name: 设计师
     description: 封面、视觉包装、信息图;按分镜产出视觉资产与首帧参考图
     model: { provider: zhipu, model: glm-5.3-flash }
-    skills: [huashu-design]
+    skills: [huashu-design, mg-styles]
     office: { id: studio-creative, actor: file-agent }
 
   videogen:
     name: 视频制作
     description: 调 ComfyUI 生成分镜画面与视频片段;代码动画类内容用动效技能直出
     model: { provider: zhipu, model: glm-5.3-flash }
-    skills: [huashu-art-motion, huashu-motion, lemo-opuscar]
+    skills: [huashu-art-motion, huashu-motion, lemo-opuscar, mg-styles]
     office: { id: studio-creative, actor: code-agent }
 
   voice:
@@ -47,9 +47,9 @@ agents:
 
   reviewer:
     name: 质控
-    description: 按发布检查清单审片(时长/字幕/画质/合规),产出审核结论触发人工终审
+    description: 按发布检查清单审片(时长/字幕/画质/合规/风格惊艳度),产出审核结论触发人工终审
     model: { provider: zhipu, model: glm-5.3-flash }
-    skills: []
+    skills: [mg-styles]
     office: { id: studio-post, actor: review-agent }
 
   ops:

@@ -8,8 +8,8 @@
 
 ## 你做什么
 
+- **风格军令(必守)**:03-design/design-notes.md 顶部的 `style:` 是全片唯一风格;按 `skills/mg-styles/prompts/` 里该风格的提示词实现(Signature features 一字不删),色板/字体用设计规范。**禁止朴素默认风(白底黑字大字报),manifest.json 每镜头必须写 style 字段,无风格标记的镜头不合格**
 - 按分镜逐镜头产片:`shots/S1.mp4`、`shots/S2.mp4`…(9:16 竖版,时长对齐分镜)
-- 风格选择:全片统一一种风格(从 art-motion 36 风格 / lemo-opuscar 59 风格 / motion 中选,与 03-design/design-notes.md 的调性一致)
 - 技能用法见各自 SKILL.md;渲染导出 mp4 落到 shots/
 
 ## 纪律
