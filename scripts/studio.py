@@ -96,13 +96,15 @@ def agent_env(agent_cfg, models):
 
 
 def link_skills(stage_dir, agent_cfg, global_skills):
-    """把 agent 声明的技能软链进阶段工作区(项目级技能)。注:用户级技能仍全局可见,靠 AGENT.md 约束使用范围(软隔离)。"""
+    """把 agent 声明的技能软链进阶段工作区(项目级技能)。仓库内 skills/ 优先,全局目录兜底。
+    注:用户级技能仍全局可见,靠 AGENT.md 约束使用范围(软隔离)。"""
     skills_dir = stage_dir / '.claude' / 'skills'
     skills_dir.mkdir(parents=True, exist_ok=True)
+    repo_skills = ROOT / 'skills'
     for name in agent_cfg.get('skills') or []:
-        src = global_skills / name
+        src = repo_skills / name if (repo_skills / name).exists() else global_skills / name
         dst = skills_dir / name
-        if not dst.exists():
+        if not dst.exists() and src.exists():
             dst.symlink_to(src.resolve())
 
 
