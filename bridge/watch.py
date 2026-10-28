@@ -236,7 +236,7 @@ def build(oid, tasks, seq, all_tasks=None, sysd=None):
             from urllib.parse import quote
             board['link'] = {'label': '▶ 看成片', 'url': f"{RUNS_SERVER}/{quote(tid)}/06-edit/final.mp4"}
         tasks_list = []
-        for sid, s in t['stages'].items():
+        for sid, s in ({} if life == 'completed' else t['stages']).items():   # 完结任务撤掉阶段任务牌,工位不再常驻"已完成"
             agent = STAGE_TO_AGENT.get(sid)
             if not agent or OFFICE_OF.get(agent) != oid:
                 continue
