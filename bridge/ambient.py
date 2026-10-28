@@ -112,7 +112,7 @@ def act(team):
         r = cmd(team, 'office.meeting',
                 [{'entityId': 'office-lead', 'role': 'speaker'}] +
                 [{'entityId': a, 'role': 'attendee'} for a in crowd],
-                {'boardId': 'office.wall-whiteboard', 'text': random.choice(MEETING_LINES),
+                {'boardId': 'whiteboard-1', 'text': random.choice(MEETING_LINES),
                  'durationMs': 12000})
         return f'meeting×{len(crowd) + 1} {r.get("code")}'
     # 表情

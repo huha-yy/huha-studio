@@ -101,19 +101,18 @@ export const officePersonal: ScenePlugin = {
 
 const tableMeetingParams = z.strictObject({ tableId: idSchema, text: z.string().max(500), durationMs: z.number().int().min(1000).max(120000).default(10000) })
 const TABLE_SEATS = [
-  { interaction: 'sit1', seat: 'seat1', approach: 'approach1', facing: 'front' },
-  { interaction: 'sit2', seat: 'seat2', approach: 'approach2', facing: 'front' },
-  { interaction: 'sit3', seat: 'seat3', approach: 'approach3', facing: 'front' },
-  { interaction: 'sit4', seat: 'seat4', approach: 'approach4', facing: 'right' },
-  { interaction: 'sit5', seat: 'seat5', approach: 'approach5', facing: 'left' },
+  { interaction: 'sit1', seat: 'seat1', approach: 'approach1', facing: 'right' },
+  { interaction: 'sit2', seat: 'seat2', approach: 'approach2', facing: 'right' },
+  { interaction: 'sit3', seat: 'seat3', approach: 'approach3', facing: 'left' },
+  { interaction: 'sit4', seat: 'seat4', approach: 'approach4', facing: 'left' },
 ] as const
 export const officeTableMeetings: ScenePlugin = {
   id: 'office.table-meetings', name: '围桌会议', version: '1.0.0', apiVersion: 1, dependencies: ['office.objects'],
   capabilities: [{ id: 'office.table-meeting', name: '会议桌围坐', params: tableMeetingParams,
-    participants: { min: 2, max: 5, roles: [{ role: 'speaker', min: 1, max: 1 }, { role: 'attendee', min: 1, max: 4 }], rules: ['参与者必须绑定工位座位;tableId 必须指向会议桌'] },
+    participants: { min: 2, max: 4, roles: [{ role: 'speaker', min: 1, max: 1 }, { role: 'attendee', min: 1, max: 3 }], rules: ['参与者必须绑定工位座位;tableId 必须指向会议桌'] },
     build(context, raw) {
       const params = tableMeetingParams.parse(raw), list = actors(context)
-      if (list.length < 2 || list.length > 5 || context.participants.filter(p => p.role === 'speaker').length !== 1 || context.participants.some(p => p.role !== 'speaker' && p.role !== 'attendee')) throw new SceneFault('INVALID_PARTICIPANTS', '围桌会议需 2–5 人、一位 speaker,其余为 attendee')
+      if (list.length < 2 || list.length > 4 || context.participants.filter(p => p.role === 'speaker').length !== 1 || context.participants.some(p => p.role !== 'speaker' && p.role !== 'attendee')) throw new SceneFault('INVALID_PARTICIPANTS', '围桌会议需 2–4 人、一位 speaker,其余为 attendee')
       const table = context.world.props.find(p => p.id === params.tableId && p.templateId === 'office.conference-table')
       if (!table) throw new SceneFault('ENTITY_NOT_FOUND', params.tableId)
       const speaker = one(context, 'speaker')
