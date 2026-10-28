@@ -68,6 +68,26 @@ def respond(interaction_id, presentation):
     return r.get('code')
 
 
+def agent_tasks_text(agent):
+    """该岗位在各任务里的阶段状态(含已完结),最多 12 条。"""
+    runs = ROOT / 'runs'
+    rows = []
+    if runs.exists():
+        for d in sorted(runs.iterdir()):
+            f = d / 'state.json'
+            if not f.exists() or not d.name[:1].isdigit():
+                continue
+            st = json.loads(f.read_text())
+            sid = STAGE_OF.get(agent)
+            cell = st['stages'].get(sid) if sid else None
+            if not cell:
+                continue
+            mark = {'done': '✅', 'running': '🔄', 'failed': '❌', 'pending': '⏳'}.get(cell['status'], '?')
+            cost = f" ${(cell.get('cost_usd') or 0):.2f}" if cell.get('cost_usd') else ''
+            rows.append(f"{mark} {st['topic'][:14]}·{sid}{cost}")
+    return '\n'.join(rows[-12:]) if rows else '暂无任务记录'
+
+
 def dialog_card(agent, team):
     a = AGENTS[agent]
     return {'target': 'dialog', 'content': {
@@ -75,10 +95,10 @@ def dialog_card(agent, team):
         'title': f"{a['name']}",
         'description': a['description'],
         'fields': [
+            {'label': '当前状态', 'value': agent_status(agent)},
+            {'label': '任务台账(全部)', 'value': agent_tasks_text(agent)},
             {'label': '装备技能', 'value': ', '.join(a.get('skills') or ['无'])},
             {'label': '大脑模型', 'value': f"{a['model']['provider']}/{a['model']['model']}"},
-            {'label': '当前状态', 'value': agent_status(agent)},
-            {'label': '怎么聊', 'value': '底部输入框可直接对话(团队主管代答)'},
         ],
         'actions': [{'id': f'report-{agent}', 'label': '让TA汇报进展'}],
     }}
