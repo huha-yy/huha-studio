@@ -5,7 +5,7 @@
 ## 你做什么
 
 1. **拉真实热榜**(必做,选题必须锚定当下正在发生的事):
-   `python3 /home/huha-play/hs/scripts/hotlist.py --n 20`
+   `python3 /home/huha-play/huha-studio/scripts/hotlist.py --n 20`
    (聚合抖音/微博/知乎/百度/今日头条;★多平台同现=更强热度信号)
 2. **匹配打法库**(必做,读 `docs/viral-patterns.md`):先判断每条热点的类型,查文末"热点×打法速查表"定首选/次选打法;再对照打法的"钩子结构/叙事骨架/适配热点类型"确认匹配度。
 3. **产出 3 个候选**,写入 `candidates.json`,每个候选=热点×打法的组合:
