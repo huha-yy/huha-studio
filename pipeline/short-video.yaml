@@ -1,35 +1,54 @@
 id: short-video
 name: 竖版短视频 30s
 stages:
-  - id: brief
-    agent: planner
-    human: brief          # 两段式:出候选→人拍板→出brief
-    output: [brief.md]
-  - id: script
-    agent: screenwriter
-    input: [01-brief/brief.md]
-    output: [script.md, storyboard.json]
-  - id: design
-    agent: designer
-    input: [02-script/storyboard.json]
-    output: [cover.png]
-    timeout: 3600
-  - id: video
-    agent: videogen
-    input: [02-script/storyboard.json, 03-design/]
-    output: [shots/]
-    timeout: 7200
-  - id: voice
-    agent: voice
-    input: [02-script/script.md]
-    output: [voiceover.wav]
-  - id: edit
-    agent: editor
-    input: [04-video/shots/, 05-voice/, 03-design/]
-    output: [final.mp4]
-    timeout: 3600
-  - id: review
-    agent: reviewer
-    human: review         # verdict→人终审
-    input: [06-edit/final.mp4]
-    output: [checklist.md, verdict.json]
+- id: brief
+  agent: planner
+  human: brief
+  output:
+  - brief.md
+- id: script
+  agent: screenwriter
+  input:
+  - 01-brief/brief.md
+  output:
+  - script.md
+  - storyboard.json
+- id: design
+  agent: designer
+  input:
+  - 02-script/storyboard.json
+  output:
+  - cover.png
+  timeout: 3600
+- id: video
+  agent: videogen
+  input:
+  - 02-script/storyboard.json
+  - 03-design/
+  output:
+  - shots/
+  timeout: 7200
+- id: voice
+  agent: voice
+  input:
+  - 02-script/script.md
+  output:
+  - voiceover.wav
+- id: edit
+  agent: editor
+  input:
+  - 04-video/shots/
+  - 05-voice/
+  - 03-design/
+  output:
+  - final.mp4
+  timeout: 3600
+- id: review
+  agent: reviewer
+  human: review
+  input:
+  - 06-edit/final.mp4
+  output:
+  - checklist.md
+  - verdict.json
+  timeout: 3600
